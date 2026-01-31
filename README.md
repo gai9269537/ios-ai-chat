@@ -6,7 +6,7 @@ Coda AI is a high-fidelity, private AI chat application designed for the "Sovere
 
 ## ✨ Key Features
 
-- **🏛️ Smart Workspaces**: Organize your intelligence into projects like **Work**, **Ideas**, **Dev**, and **Life**.
+- **🏛️ Smart Workspaces**: Organize your intelligence into dynamic "Project Labs". Add, rename, or remove categories to suit your evolving workflow.
 - **🎤 Voice Activation**: Fully integrated speech-to-text for proactive, hands-free task creation.
 - **🔒 Data Sovereignty**: Your chat history is stored **100% locally** on your device.
 - **⚡ Proactive Tooling**: Long-press messages to refine, expand, or humanize text instantly.

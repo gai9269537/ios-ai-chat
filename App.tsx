@@ -8,9 +8,9 @@ import { isUsageLimitReached, incrementUsage, getRemainingMessages } from './ser
 
 const STORAGE_KEY = 'ios_ai_chat_sessions_v1';
 const MODEL_STORAGE_KEY = 'ios_ai_chat_selected_model';
+const PROJECT_STORAGE_KEY = 'ios_ai_chat_projects_v1';
 
-const DEFAULT_PROJECTS: Project[] = [
-  { id: 'all', name: 'All', emoji: '🌟', color: 'bg-zinc-100' },
+const INITIAL_PROJECTS: Project[] = [
   { id: 'work', name: 'Work', emoji: '💼', color: 'bg-blue-50' },
   { id: 'creative', name: 'Ideas', emoji: '🎨', color: 'bg-purple-50' },
   { id: 'coding', name: 'Dev', emoji: '💻', color: 'bg-zinc-800' },
@@ -25,7 +25,29 @@ declare global {
 }
 
 const App: React.FC = () => {
-  const [sessions, setSessions] = useState<ChatSession[]>([]);
+  const [sessions, setSessions] = useState<ChatSession[]>(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (!saved) return [];
+      const parsed = JSON.parse(saved);
+      if (!Array.isArray(parsed)) return [];
+
+      return parsed.map((s: any) => {
+        if (!s || typeof s !== 'object') return null;
+        return {
+          ...s,
+          lastUpdated: s.lastUpdated ? new Date(s.lastUpdated) : new Date(),
+          messages: Array.isArray(s.messages) ? s.messages.map((m: any) => ({
+            ...m,
+            timestamp: m.timestamp ? new Date(m.timestamp) : new Date()
+          })) : []
+        };
+      }).filter(Boolean) as ChatSession[];
+    } catch (e) {
+      console.error("Failed to parse sessions:", e);
+      return [];
+    }
+  });
   const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -36,12 +58,29 @@ const App: React.FC = () => {
   const [chatSummary, setChatSummary] = useState<string | null>(null);
   const [isSummarizing, setIsSummarizing] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
-  const [isSplashVisible, setIsSplashVisible] = useState(true);
+  const [isSplashVisible, setIsSplashVisible] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
   const [geminiApiKey, setGeminiApiKey] = useState(localStorage.getItem('gemini_api_key_v1') || '');
   const [showSettings, setShowSettings] = useState(false);
   const [tempApiKey, setTempApiKey] = useState(geminiApiKey);
   const [activeProjectId, setActiveProjectId] = useState('all');
+
+  // Robust project initialization
+  const [projects, setProjects] = useState<Project[]>(() => {
+    try {
+      const saved = localStorage.getItem(PROJECT_STORAGE_KEY);
+      if (!saved) return INITIAL_PROJECTS;
+      const parsed = JSON.parse(saved);
+      return Array.isArray(parsed) ? parsed : INITIAL_PROJECTS;
+    } catch (e) {
+      console.error("Failed to parse projects:", e);
+      return INITIAL_PROJECTS;
+    }
+  });
+
+  const [showProjectModal, setShowProjectModal] = useState(false);
+  const [editingProject, setEditingProject] = useState<Project | null>(null);
+  const [projectForm, setProjectForm] = useState({ name: '', emoji: '' });
 
   const deleteSession = (e: React.MouseEvent, id: string) => {
     e.stopPropagation();
@@ -58,6 +97,32 @@ const App: React.FC = () => {
     if (targetIndex >= 0 && targetIndex < newSessions.length) {
       [newSessions[index], newSessions[targetIndex]] = [newSessions[targetIndex], newSessions[index]];
       setSessions(newSessions);
+    }
+  };
+
+  const handleSaveProject = () => {
+    if (!projectForm.name.trim()) return;
+    if (editingProject) {
+      setProjects(prev => prev.map(p => p.id === editingProject.id ? { ...p, name: projectForm.name, emoji: projectForm.emoji || '📦' } : p));
+    } else {
+      const newProject: Project = {
+        id: Date.now().toString(),
+        name: projectForm.name,
+        emoji: projectForm.emoji || '📦',
+        color: 'bg-zinc-100'
+      };
+      setProjects(prev => [...prev, newProject]);
+    }
+    setShowProjectModal(false);
+    setEditingProject(null);
+    setProjectForm({ name: '', emoji: '' });
+  };
+
+  const deleteProject = (id: string) => {
+    if (window.confirm("Delete this workspace category? Sessions within it won't be deleted but will appear in 'All'.")) {
+      setProjects(prev => prev.filter(p => p.id !== id));
+      setSessions(prev => prev.map(s => s.projectId === id ? { ...s, projectId: undefined, projectEmoji: undefined } : s));
+      if (activeProjectId === id) setActiveProjectId('all');
     }
   };
 
@@ -111,32 +176,21 @@ const App: React.FC = () => {
   }, [geminiApiKey]);
 
   useEffect(() => {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        const revived = parsed.map((s: any) => ({
-          ...s,
-          lastUpdated: new Date(s.lastUpdated),
-          messages: s.messages.map((m: any) => ({
-            ...m,
-            timestamp: new Date(m.timestamp)
-          }))
-        }));
-        setSessions(revived);
-      } catch (e) { console.error(e); }
-    }
     const savedModel = localStorage.getItem(MODEL_STORAGE_KEY) as ModelName;
     if (savedModel && Object.values(ModelName).includes(savedModel)) setSelectedModel(savedModel);
   }, []);
 
   useEffect(() => {
-    if (sessions.length > 0) localStorage.setItem(STORAGE_KEY, JSON.stringify(sessions));
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(sessions));
   }, [sessions]);
 
   useEffect(() => {
     localStorage.setItem(MODEL_STORAGE_KEY, selectedModel);
   }, [selectedModel]);
+
+  useEffect(() => {
+    localStorage.setItem(PROJECT_STORAGE_KEY, JSON.stringify(projects));
+  }, [projects]);
 
   const currentSession = useMemo(() =>
     sessions.find(s => s.id === currentSessionId),
@@ -150,7 +204,7 @@ const App: React.FC = () => {
   }, [messages, currentSessionId]);
 
   const createNewSession = () => {
-    const activeProject = DEFAULT_PROJECTS.find(p => p.id === activeProjectId);
+    const activeProject = projects.find(p => p.id === activeProjectId);
     const newSession: ChatSession = {
       id: Date.now().toString(),
       title: 'New Chat',
@@ -172,7 +226,7 @@ const App: React.FC = () => {
     // If no active session (Home Screen), create one automatically
     if (!targetSessionId) {
       const newId = Date.now().toString();
-      const activeProject = DEFAULT_PROJECTS.find(p => p.id === activeProjectId);
+      const activeProject = projects.find(p => p.id === activeProjectId);
       const newSession: ChatSession = {
         id: newId,
         title: messageText.length > 30 ? messageText.substring(0, 30) + '...' : messageText,
@@ -304,13 +358,25 @@ const App: React.FC = () => {
                 </div>
 
                 <div className="flex items-center space-x-3">
-                  {!currentSessionId && sessions.length > 0 && (
-                    <button
-                      onClick={() => setIsEditMode(!isEditMode)}
-                      className={`px-4 py-1.5 rounded-full text-[13px] font-black transition-all ${isEditMode ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20' : 'bg-zinc-100 text-zinc-500 hover:bg-zinc-200'}`}
-                    >
-                      {isEditMode ? 'Done' : 'Edit'}
-                    </button>
+                  {!currentSessionId && (
+                    <div className="flex items-center space-x-2">
+                      <button
+                        onClick={() => { setEditingProject(null); setProjectForm({ name: '', emoji: '' }); setShowProjectModal(true); }}
+                        className="flex items-center space-x-1.5 px-3 py-1.5 bg-blue-600 text-white rounded-full active:scale-90 transition-all shadow-lg shadow-blue-500/20"
+                        title="Add New Lab"
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M12 4v16m8-8H4" /></svg>
+                        <span className="text-[11px] font-black uppercase tracking-wider">Lab</span>
+                      </button>
+                      {sessions.length > 0 && (
+                        <button
+                          onClick={() => setIsEditMode(!isEditMode)}
+                          className={`px-4 py-1.5 rounded-full text-[13px] font-black transition-all ${isEditMode ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20' : 'bg-zinc-100 text-zinc-500 hover:bg-zinc-200'}`}
+                        >
+                          {isEditMode ? 'Done' : 'Edit'}
+                        </button>
+                      )}
+                    </div>
                   )}
                   {!currentSessionId ? (
                     <button onClick={createNewSession} className="bg-zinc-100 hover:bg-zinc-200 text-[#007AFF] p-2.5 rounded-full active:scale-95 transition-all shadow-sm">
@@ -363,24 +429,54 @@ const App: React.FC = () => {
                     <p className="text-[10px] text-zinc-400 font-black uppercase tracking-[0.2em]">Sovereign Control</p>
                   </div>
 
-                  {/* Project Picker */}
-                  {!isEditMode && (
-                    <div className="flex space-x-3 overflow-x-auto no-scrollbar px-1 py-2">
-                      {DEFAULT_PROJECTS.map(project => (
-                        <button
-                          key={project.id}
-                          onClick={() => setActiveProjectId(project.id)}
-                          className={`flex items-center space-x-2 px-5 py-2.5 rounded-2xl whitespace-nowrap transition-all duration-300 border-2 ${activeProjectId === project.id
-                            ? 'bg-zinc-900 text-white border-zinc-900 shadow-xl scale-105'
-                            : 'bg-white text-zinc-500 border-white hover:border-zinc-100'
-                            }`}
-                        >
-                          <span className="text-lg">{project.emoji}</span>
-                          <span className="text-[13px] font-black uppercase tracking-widest">{project.name}</span>
-                        </button>
+                  {/* Project Picker with Scroll Indicator */}
+                  <div className="relative">
+                    <div className="flex items-center space-x-3 overflow-x-auto no-scrollbar px-1 py-2">
+                      <button
+                        onClick={() => { setEditingProject(null); setProjectForm({ name: '', emoji: '' }); setShowProjectModal(true); }}
+                        className="flex items-center space-x-2 px-5 py-2.5 rounded-2xl bg-blue-600 text-white border-2 border-blue-600 shadow-xl shadow-blue-500/30 active:scale-95 transition-all whitespace-nowrap flex-shrink-0"
+                      >
+                        <span className="text-lg font-bold">+</span>
+                        <span className="text-[13px] font-black uppercase tracking-widest">Add Lab</span>
+                      </button>
+
+                      <button
+                        onClick={() => setActiveProjectId('all')}
+                        className={`flex items-center space-x-2 px-5 py-2.5 rounded-2xl whitespace-nowrap transition-all duration-300 border-2 ${activeProjectId === 'all'
+                          ? 'bg-zinc-900 text-white border-zinc-900 shadow-xl scale-105'
+                          : 'bg-white text-zinc-500 border-white hover:border-zinc-100'
+                          }`}
+                      >
+                        <span className="text-lg">🌟</span>
+                        <span className="text-[13px] font-black uppercase tracking-widest">All</span>
+                      </button>
+
+                      {Array.isArray(projects) && projects.map(project => (
+                        <div key={project.id} className="relative group flex-shrink-0">
+                          <button
+                            onClick={() => isEditMode ? (setEditingProject(project), setProjectForm({ name: project.name, emoji: project.emoji }), setShowProjectModal(true)) : setActiveProjectId(project.id)}
+                            className={`flex items-center space-x-2 px-5 py-2.5 rounded-2xl whitespace-nowrap transition-all duration-300 border-2 ${activeProjectId === project.id
+                              ? 'bg-zinc-900 text-white border-zinc-900 shadow-xl scale-105'
+                              : 'bg-white text-zinc-500 border-white hover:border-zinc-100'
+                              } ${isEditMode ? 'pr-10' : ''}`}
+                          >
+                            <span className="text-lg">{project.emoji}</span>
+                            <span className="text-[13px] font-black uppercase tracking-widest">{project.name}</span>
+                          </button>
+                          {isEditMode && (
+                            <button
+                              onClick={(e) => { e.stopPropagation(); deleteProject(project.id); }}
+                              className="absolute right-2 top-1/2 -translate-y-1/2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center scale-75 active:scale-50 transition-transform"
+                            >
+                              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M6 18L18 6M6 6l12 12" /></svg>
+                            </button>
+                          )}
+                        </div>
                       ))}
                     </div>
-                  )}
+                    {/* Right Fade Indicator */}
+                    <div className="absolute right-0 top-0 bottom-0 w-12 bg-gradient-to-l from-[#F2F2F7] to-transparent pointer-events-none z-10 opacity-70"></div>
+                  </div>
 
                   <div className="space-y-3 pt-2">
                     {sessions
@@ -615,8 +711,71 @@ const App: React.FC = () => {
             </div>
           </div>
         )}
+        {/* Project Editor Bottom Sheet */}
+        {showProjectModal && (
+          <div className="absolute inset-0 z-[400] flex items-end">
+            <div className="absolute inset-0 bg-black/50 backdrop-blur-sm animate-in fade-in duration-300" onClick={() => setShowProjectModal(false)} />
+            <div className="w-full bg-white rounded-t-[32px] shadow-2xl z-[410] animate-in slide-in-from-bottom duration-400 max-h-[90%] flex flex-col p-8 pb-12">
+              <div className="flex justify-center mb-6">
+                <div className="w-12 h-1.5 bg-zinc-200 rounded-full" />
+              </div>
+              <h3 className="text-2xl font-black font-['Outfit'] coda-gradient-text mb-8">{editingProject ? 'Refine Workspace' : 'Initialize Lab'}</h3>
+
+              <div className="space-y-8 flex-1 overflow-y-auto no-scrollbar pb-6">
+                <div className="space-y-3">
+                  <label className="text-[11px] font-black uppercase tracking-[0.2em] text-zinc-400 ml-1">Lab Identity Name</label>
+                  <input
+                    autoFocus
+                    value={projectForm.name}
+                    onChange={(e) => setProjectForm(prev => ({ ...prev, name: e.target.value }))}
+                    placeholder="e.g. Project Phoenix"
+                    className="w-full bg-zinc-50 border-2 border-zinc-100 rounded-[22px] px-6 py-5 font-bold text-zinc-900 focus:border-blue-500 focus:bg-white transition-all outline-none text-lg"
+                  />
+                </div>
+
+                <div className="space-y-3">
+                  <label className="text-[11px] font-black uppercase tracking-[0.2em] text-zinc-400 ml-1">Iconic Identifier</label>
+                  <div className="grid grid-cols-5 gap-3">
+                    {['💼', '🎨', '💻', '🏠', '📈', '⚡', '🚀', '🔮', '🍱', '🧪'].map(emoji => (
+                      <button
+                        key={emoji}
+                        onClick={() => setProjectForm(prev => ({ ...prev, emoji }))}
+                        className={`h-14 flex items-center justify-center text-2xl rounded-2xl transition-all ${projectForm.emoji === emoji ? 'bg-zinc-900 scale-105 shadow-xl text-white' : 'bg-zinc-50 hover:bg-zinc-100 border border-zinc-100'}`}
+                      >
+                        {emoji}
+                      </button>
+                    ))}
+                  </div>
+                  <div className="mt-4">
+                    <input
+                      value={projectForm.emoji}
+                      onChange={(e) => setProjectForm(prev => ({ ...prev, emoji: e.target.value.substring(0, 2) }))}
+                      placeholder="Or enter custom emoji..."
+                      className="w-full bg-zinc-50 border border-transparent rounded-xl px-4 py-3 text-center font-bold text-zinc-400 focus:bg-zinc-100 transition-all outline-none"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex space-x-4 pt-4 border-t border-zinc-50">
+                <button
+                  onClick={() => setShowProjectModal(false)}
+                  className="flex-1 bg-zinc-100 text-zinc-500 py-5 rounded-[24px] font-black uppercase tracking-widest text-[13px] active:scale-95 transition-all"
+                >
+                  Dismiss
+                </button>
+                <button
+                  onClick={handleSaveProject}
+                  className="flex-[2] bg-blue-600 text-white py-5 rounded-[24px] font-black uppercase tracking-widest text-[13px] shadow-2xl shadow-blue-500/30 active:scale-95 transition-all"
+                >
+                  {editingProject ? 'Commit Changes' : 'Confirm & Launch'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
-    </div>
+    </div >
 
   );
 };

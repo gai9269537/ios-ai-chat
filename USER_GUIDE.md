@@ -17,9 +17,11 @@ Every launch of Coda AI is met with a high-fidelity **Precision Splash**. This i
 ## 🚀 Mastering Your Workspace
 
 ### 🏛️ Smart Workspaces
-1. **Contextual Project Labs**: Filter your sessions using the category picker at the top (**Work**, **Ideas**, **Dev**, **Life**). Each project lab maintains its own context and visual identity.
+1. **Contextual Project Labs**: Filter your sessions using the category picker at the top. Use the **"+ Add Lab"** button to create custom categories with unique identities.
 2. **Infinite Creation**: Tap the **Compose Icon** (Top-Right) or just start typing in the bottom bar to spin up a new high-speed thread.
-3. **Session Management**: Use the **Edit** button in the header to reorder your workspaces or delete those that are no longer productive.
+3. **Session & Lab Management**: Use the **Edit** button in the header to manage your workspace. In Edit Mode:
+    - **Reorder Sessions**: Use arrows to move threads up or down.
+    - **Manage Labs**: Tap a category button to rename it or tap the red delete icon to remove it.
 4. **Intelligence Toggle**: Use the **Gear Icon** inside any chat to access model switching (**Pro vs. Flash**) and advanced summarization tools.
 
 ### 🎙️ Proactive Voice UI
