@@ -2,7 +2,12 @@
 import { GoogleGenAI } from "@google/genai";
 import { ModelName, Message } from "../types";
 
-const API_KEY = process.env.API_KEY || '';
+// Note: We move the API Key logic to be more dynamic to support user-provided keys if necessary
+let DYNAMIC_API_KEY = process.env.API_KEY || '';
+
+export const setGeminiApiKey = (key: string) => {
+  DYNAMIC_API_KEY = key;
+};
 
 export const getGeminiResponse = async (
   prompt: string,
@@ -10,12 +15,11 @@ export const getGeminiResponse = async (
   history: any[] = [],
   onChunk: (chunk: string) => void
 ) => {
-  if (!API_KEY) {
-    throw new Error("API Key is missing. Please ensure process.env.API_KEY is configured.");
+  if (!DYNAMIC_API_KEY) {
+    throw new Error("API Key is missing. Please set your Gemini API Key in Settings.");
   }
 
-  // Note: Using the specific API pattern provided in the initial codebase
-  const ai = new GoogleGenAI({ apiKey: API_KEY });
+  const ai = new GoogleGenAI({ apiKey: DYNAMIC_API_KEY });
 
   try {
     const chat = (ai as any).chats.create({
@@ -45,8 +49,8 @@ export const getGeminiResponse = async (
 };
 
 export const summarizeChat = async (messages: Message[], modelName: ModelName): Promise<string> => {
-  if (!API_KEY) throw new Error("API Key is missing.");
-  const ai = new GoogleGenAI({ apiKey: API_KEY });
+  if (!DYNAMIC_API_KEY) throw new Error("API Key is missing.");
+  const ai = new GoogleGenAI({ apiKey: DYNAMIC_API_KEY });
 
   const chatContent = messages.map(m => `${m.role === 'user' ? 'User' : 'Assistant'}: ${m.content}`).join('\n');
 
