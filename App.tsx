@@ -287,7 +287,19 @@ const App: React.FC = () => {
                     <span className="text-[11px] text-blue-500">{getRemainingMessages()} messages left today</span>
                   </div>
                 </div>
-              ) : messages.map(msg => <MessageBubble key={msg.id} message={msg} />)}
+              ) : (
+                messages.map(msg => (
+                  <MessageBubble
+                    key={msg.id}
+                    message={msg}
+                    onAction={(p, content) => handleSendMessage(`${p}: "${content}"`)}
+                    onUseAsPrompt={(content) => {
+                      setInputValue(content);
+                      // focus textarea is hard without ref, but user will tap it
+                    }}
+                  />
+                ))
+              )}
             </div>
 
             <div className="p-4 pb-8 border-t border-zinc-200 bg-white/90 ios-blur">
