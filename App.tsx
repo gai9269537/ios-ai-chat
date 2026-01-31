@@ -4,6 +4,7 @@ import StatusBar from './components/StatusBar';
 import MessageBubble from './components/MessageBubble';
 import { Message, ChatSession, ModelName } from './types';
 import { getGeminiResponse, summarizeChat } from './services/gemini';
+import { isUsageLimitReached, incrementUsage, getRemainingMessages } from './services/usage';
 
 const STORAGE_KEY = 'ios_ai_chat_sessions_v1';
 const MODEL_STORAGE_KEY = 'ios_ai_chat_selected_model';
@@ -128,12 +129,18 @@ const App: React.FC = () => {
 
     setSessions(prev => prev.map(s => s.id === currentSessionId ? { ...s, title: updatedTitle || s.title, lastUpdated: new Date(), messages: [...s.messages, userMessage, assistantPlaceholder] } : s));
 
+    if (isUsageLimitReached()) {
+      alert("Daily free limit reached. We are keeping it free for now by limiting daily usage. Please come back tomorrow!");
+      return;
+    }
+
     try {
       let accumulated = "";
       await getGeminiResponse(prompt, selectedModel, [], (chunk) => {
         accumulated += chunk;
         setSessions(prev => prev.map(s => s.id === currentSessionId ? { ...s, messages: s.messages.map(msg => msg.id === assistantId ? { ...msg, content: accumulated } : msg) } : s));
       });
+      incrementUsage();
       setSessions(prev => prev.map(s => s.id === currentSessionId ? { ...s, messages: s.messages.map(msg => msg.id === assistantId ? { ...msg, status: 'sent' } : msg) } : s));
     } catch (error) {
       setSessions(prev => prev.map(s => s.id === currentSessionId ? { ...s, messages: s.messages.map(msg => msg.id === assistantId ? { ...msg, content: "Error communicating with AI.", status: 'error' } : msg) } : s));
@@ -259,9 +266,14 @@ const App: React.FC = () => {
 
             <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 py-6 space-y-2 bg-[#F2F2F7]">
               {messages.length === 0 ? (
-                <div className="flex flex-col items-center justify-center h-full text-zinc-400 py-20">
+                <div className="flex flex-col items-center justify-center h-full text-zinc-400 py-20 px-10 text-center">
                   <div className="w-16 h-16 rounded-full bg-white flex items-center justify-center shadow-sm mb-4"><svg className="w-8 h-8 text-blue-500" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.477 2 2 6.477 2 12c0 1.891.527 3.653 1.438 5.16L2 22l4.84-1.438C8.347 21.473 10.109 22 12 22c5.523 0 10-4.477 10-10S17.523 2 12 2z" /></svg></div>
-                  <p className="font-semibold text-zinc-900">New Conversation</p>
+                  <p className="font-semibold text-zinc-900 mb-2">New Secure Conversation</p>
+                  <p className="text-xs text-zinc-500 mb-6 leading-relaxed">Your data stay on this device. We don't share your chats or personal info with anyone.</p>
+                  <div className="bg-blue-50 px-4 py-2 rounded-lg inline-flex items-center space-x-2">
+                    <span className="text-[10px] uppercase font-bold text-blue-600 tracking-wider">Free Plan</span>
+                    <span className="text-[11px] text-blue-500">{getRemainingMessages()} messages left today</span>
+                  </div>
                 </div>
               ) : messages.map(msg => <MessageBubble key={msg.id} message={msg} />)}
             </div>

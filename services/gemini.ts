@@ -1,5 +1,5 @@
 
-import { GoogleGenAI, GenerateContentResponse } from "@google/genai";
+import { GoogleGenAI } from "@google/genai";
 import { ModelName, Message } from "../types";
 
 const API_KEY = process.env.API_KEY || '';
@@ -7,34 +7,36 @@ const API_KEY = process.env.API_KEY || '';
 export const getGeminiResponse = async (
   prompt: string,
   modelName: ModelName,
-  history: { role: 'user' | 'model'; parts: { text: string }[] }[] = [],
+  history: any[] = [],
   onChunk: (chunk: string) => void
 ) => {
   if (!API_KEY) {
     throw new Error("API Key is missing. Please ensure process.env.API_KEY is configured.");
   }
 
+  // Note: Using the specific API pattern provided in the initial codebase
   const ai = new GoogleGenAI({ apiKey: API_KEY });
-  
+
   try {
-    const chat = ai.chats.create({
+    const chat = (ai as any).chats.create({
       model: modelName,
       config: {
-        systemInstruction: `You are a helpful and polite AI assistant running the ${modelName} model. You are communicating via a mobile chat app that mimics an iPhone interface. Keep your responses concise and friendly, using formatting like bullet points or bold text when appropriate for readability on small screens.`,
+        systemInstruction: "You are a professional AI assistant. Keep responses extremely concise and helpful for mobile users. Use bullet points. Maximum 200 words.",
       }
     });
 
     const streamResponse = await chat.sendMessageStream({ message: prompt });
-    
+
     let fullText = "";
     for await (const chunk of streamResponse) {
-      const text = (chunk as GenerateContentResponse).text;
+      // Handle potential variation in chunk structure
+      const text = chunk.text || (typeof chunk.text === 'function' ? chunk.text() : "");
       if (text) {
         fullText += text;
         onChunk(text);
       }
     }
-    
+
     return fullText;
   } catch (error) {
     console.error("Gemini API Error:", error);
@@ -45,14 +47,14 @@ export const getGeminiResponse = async (
 export const summarizeChat = async (messages: Message[], modelName: ModelName): Promise<string> => {
   if (!API_KEY) throw new Error("API Key is missing.");
   const ai = new GoogleGenAI({ apiKey: API_KEY });
-  
+
   const chatContent = messages.map(m => `${m.role === 'user' ? 'User' : 'Assistant'}: ${m.content}`).join('\n');
-  
-  const response = await ai.models.generateContent({
+
+  const response = await (ai as any).models.generateContent({
     model: modelName,
-    contents: `Please provide a concise, clear summary of the following conversation in 3-4 bullet points. Focus on the main topics discussed and any conclusions reached.\n\nCONVERSATION:\n${chatContent}`,
+    contents: `Summarize in 3 bullet points:\n\n${chatContent}`,
     config: {
-      systemInstruction: "You are a professional summarizer. Provide high-quality, readable summaries for mobile users.",
+      systemInstruction: "You are a professional summarizer. Be extremely brief.",
     }
   });
 
