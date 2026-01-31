@@ -1,8 +1,8 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'com.aichat.ios.pro',
-  appName: 'AI Chat Pro',
+  appId: 'com.coda.ai.pro',
+  appName: 'Coda AI',
   webDir: 'dist'
 };
 

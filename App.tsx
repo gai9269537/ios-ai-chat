@@ -431,8 +431,8 @@ const App: React.FC = () => {
 
                   <section className="bg-zinc-900 text-white p-5 rounded-2xl shadow-lg relative overflow-hidden">
                     <div className="relative z-10">
-                      <h3 className="text-sm font-bold mb-1">Why Choose AI Chat Pro?</h3>
-                      <p className="text-xs text-zinc-400 leading-relaxed italic">"The most professional way to use AI on mobile. No cloud storage, no complex sign-ups, just pure productivity."</p>
+                      <h3 className="text-sm font-bold mb-1">Why Choose Coda AI?</h3>
+                      <p className="text-xs text-zinc-400 leading-relaxed italic">"The most professional way to build and manage with AI on mobile. No cloud storage, no complex sign-ups, just pure productivity."</p>
                     </div>
                     <div className="absolute -right-4 -bottom-4 w-24 h-24 bg-blue-500/20 rounded-full blur-2xl"></div>
                   </section>
@@ -443,7 +443,7 @@ const App: React.FC = () => {
                   <div className="flex justify-center items-center space-x-4 mt-6">
                     <span className="text-[10px] text-zinc-400">Ver 1.0.0</span>
                     <span className="w-1 h-1 bg-zinc-300 rounded-full"></span>
-                    <span className="text-[10px] text-zinc-400 uppercase tracking-widest font-bold">Privacy First Certified</span>
+                    <span className="text-[10px] text-zinc-400 uppercase tracking-widest font-bold">Coda Core Privacy</span>
                   </div>
                 </div>
               </div>
