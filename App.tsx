@@ -125,20 +125,28 @@ const App: React.FC = () => {
 
   const handleSaveProject = () => {
     if (!projectForm.name.trim()) return;
+
+    Haptics.impact({ style: ImpactStyle.Heavy });
+
     if (editingProject) {
       setProjects(prev => prev.map(p => p.id === editingProject.id ? { ...p, name: projectForm.name, emoji: projectForm.emoji || '📦' } : p));
     } else {
+      const newId = Date.now().toString();
       const newProject: Project = {
-        id: Date.now().toString(),
+        id: newId,
         name: projectForm.name,
         emoji: projectForm.emoji || '📦',
         color: 'bg-zinc-100'
       };
-      setProjects(prev => [...prev, newProject]);
+      setProjects(prev => [newProject, ...prev]);
+      setActiveProjectId(newId); // Auto-select the new lab
     }
+
     setShowProjectModal(false);
     setEditingProject(null);
     setProjectForm({ name: '', emoji: '' });
+
+    Haptics.notification({ type: ImpactStyle.Light as any });
   };
 
   const deleteProject = async (id: string) => {
@@ -466,53 +474,67 @@ const App: React.FC = () => {
                     <p className="text-[10px] text-zinc-400 font-black uppercase tracking-[0.2em]">Sovereign Control</p>
                   </div>
 
-                  {/* Project Picker with Scroll Indicator */}
-                  <div className="relative">
-                    <div className="flex items-center space-x-3 overflow-x-auto no-scrollbar px-1 py-2">
-                      <button
-                        onClick={() => { setEditingProject(null); setProjectForm({ name: '', emoji: '' }); setShowProjectModal(true); Haptics.impact({ style: ImpactStyle.Medium }); }}
-                        className="flex items-center space-x-2 px-5 py-2.5 rounded-2xl bg-blue-600 text-white border-2 border-blue-600 shadow-xl shadow-blue-500/30 active:scale-95 transition-all whitespace-nowrap flex-shrink-0"
-                      >
-                        <span className="text-lg font-bold">+</span>
-                        <span className="text-[13px] font-black uppercase tracking-widest">Add Lab</span>
-                      </button>
-
-                      <button
-                        onClick={() => setActiveProjectId('all')}
-                        className={`flex items-center space-x-2 px-5 py-2.5 rounded-2xl whitespace-nowrap transition-all duration-300 border-2 ${activeProjectId === 'all'
-                          ? 'bg-zinc-900 text-white border-zinc-900 shadow-xl scale-105'
-                          : 'bg-white text-zinc-500 border-white hover:border-zinc-100'
-                          }`}
-                      >
-                        <span className="text-lg">🌟</span>
-                        <span className="text-[13px] font-black uppercase tracking-widest">All</span>
-                      </button>
-
-                      {Array.isArray(projects) && projects.map(project => (
-                        <div key={project.id} className="relative group flex-shrink-0">
-                          <button
-                            onClick={() => isEditMode ? (setEditingProject(project), setProjectForm({ name: project.name, emoji: project.emoji }), setShowProjectModal(true)) : setActiveProjectId(project.id)}
-                            className={`flex items-center space-x-2 px-5 py-2.5 rounded-2xl whitespace-nowrap transition-all duration-300 border-2 ${activeProjectId === project.id
-                              ? 'bg-zinc-900 text-white border-zinc-900 shadow-xl scale-105'
-                              : 'bg-white text-zinc-500 border-white hover:border-zinc-100'
-                              } ${isEditMode ? 'pr-10' : ''}`}
-                          >
-                            <span className="text-lg">{project.emoji}</span>
-                            <span className="text-[13px] font-black uppercase tracking-widest">{project.name}</span>
-                          </button>
-                          {isEditMode && (
-                            <button
-                              onClick={(e) => { e.stopPropagation(); deleteProject(project.id); }}
-                              className="absolute right-2 top-1/2 -translate-y-1/2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center scale-75 active:scale-50 transition-transform"
-                            >
-                              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M6 18L18 6M6 6l12 12" /></svg>
-                            </button>
-                          )}
-                        </div>
-                      ))}
+                  {/* Premium Lab Floating Dock */}
+                  <div className="relative z-20 mt-2 mb-6">
+                    <div className="flex items-center justify-between mb-3 px-1">
+                      <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-zinc-400">Workspace Labs</h3>
+                      <div className="flex items-center space-x-1">
+                        <div className="w-1 h-1 bg-blue-500 rounded-full animate-pulse"></div>
+                        <span className="text-[9px] font-bold text-blue-500 uppercase tracking-wider">Live Sync</span>
+                      </div>
                     </div>
-                    {/* Right Fade Indicator */}
-                    <div className="absolute right-0 top-0 bottom-0 w-12 bg-gradient-to-l from-[#F2F2F7] to-transparent pointer-events-none z-10 opacity-70"></div>
+
+                    <div className="bg-white/40 backdrop-blur-xl border border-white/60 rounded-[30px] p-2 shadow-xl shadow-blue-500/5">
+                      <div className="flex items-center space-x-3 overflow-x-scroll scroll-smooth -webkit-overflow-scrolling-touch px-1 py-1 no-scrollbar">
+                        <button
+                          onClick={() => { setEditingProject(null); setProjectForm({ name: '', emoji: '' }); setShowProjectModal(true); Haptics.impact({ style: ImpactStyle.Medium }); }}
+                          className="flex items-center space-x-2 px-4 py-3 rounded-[22px] bg-gradient-to-tr from-blue-600 to-blue-500 text-white shadow-lg shadow-blue-500/30 active:scale-95 transition-all whitespace-nowrap flex-shrink-0"
+                        >
+                          <div className="w-6 h-6 bg-white/20 rounded-full flex items-center justify-center">
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M12 4v16m8-8H4" /></svg>
+                          </div>
+                          <span className="text-[13px] font-black uppercase tracking-wider">New Lab</span>
+                        </button>
+
+                        <div className="w-px h-8 bg-zinc-200/50 flex-shrink-0 mx-1"></div>
+
+                        <button
+                          onClick={() => { setActiveProjectId('all'); Haptics.impact({ style: ImpactStyle.Light }); }}
+                          className={`flex items-center space-x-2 px-5 py-3 rounded-[22px] whitespace-nowrap transition-all duration-300 border-2 flex-shrink-0 ${activeProjectId === 'all'
+                            ? 'bg-zinc-900 text-white border-zinc-900 shadow-xl scale-105'
+                            : 'bg-white/80 text-zinc-500 border-transparent hover:border-zinc-200'
+                            }`}
+                        >
+                          <span className="text-lg">🌟</span>
+                          <span className="text-[13px] font-black uppercase tracking-widest">All</span>
+                        </button>
+
+                        {Array.isArray(projects) && projects.map(project => (
+                          <div key={project.id} className="relative group flex-shrink-0">
+                            <button
+                              onClick={() => isEditMode ? (setEditingProject(project), setProjectForm({ name: project.name, emoji: project.emoji }), setShowProjectModal(true)) : setActiveProjectId(project.id)}
+                              className={`flex items-center space-x-2 px-5 py-3 rounded-[22px] whitespace-nowrap transition-all duration-300 border-2 flex-shrink-0 ${activeProjectId === project.id
+                                ? 'bg-zinc-900 text-white border-zinc-900 shadow-xl scale-105'
+                                : 'bg-white/80 text-zinc-500 border-transparent hover:border-zinc-200'
+                                } ${isEditMode ? 'pr-10' : ''}`}
+                            >
+                              <span className="text-lg">{project.emoji}</span>
+                              <span className="text-[13px] font-black uppercase tracking-widest">{project.name}</span>
+                            </button>
+                            {isEditMode && (
+                              <button
+                                onClick={(e) => { e.stopPropagation(); deleteProject(project.id); }}
+                                className="absolute right-2 top-1/2 -translate-y-1/2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center scale-75 active:scale-50 transition-transform"
+                              >
+                                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M6 18L18 6M6 6l12 12" /></svg>
+                              </button>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                      {/* Right Fade Indicator */}
+                      <div className="absolute right-0 top-0 bottom-0 w-12 bg-gradient-to-l from-[#F2F2F7] to-transparent pointer-events-none z-10 opacity-70"></div>
+                    </div>
                   </div>
 
                   <div className="space-y-3 pt-2">
@@ -582,16 +604,18 @@ const App: React.FC = () => {
                     <span className="text-[12px] uppercase font-bold text-zinc-900 tracking-widest">{getRemainingMessages()} credits available</span>
                   </div>
                 </div>
-              ) : messages.map(msg => (
-                <MessageBubble
-                  key={msg.id}
-                  message={msg}
-                  onAction={(p, content) => handleSendMessage(`${p}: "${content}"`)}
-                  onUseAsPrompt={(content) => {
-                    setInputValue(content);
-                  }}
-                />
-              ))}
+              ) : (
+                messages.map(msg => (
+                  <MessageBubble
+                    key={msg.id}
+                    message={msg}
+                    onAction={(p, content) => handleSendMessage(`${p}: "${content}"`)}
+                    onUseAsPrompt={(content) => {
+                      setInputValue(content);
+                    }}
+                  />
+                ))
+              )}
             </div>
 
             {!isEditMode && (
