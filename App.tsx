@@ -6,10 +6,10 @@ import { Message, ChatSession, ModelName, Project } from './types';
 import { getGeminiResponse, summarizeChat } from './services/gemini';
 import { isUsageLimitReached, incrementUsage, getRemainingMessages } from './services/usage';
 import { Capacitor } from '@capacitor/core';
-import { Haptics, ImpactStyle } from '@capacitor/haptics';
-import { Dialog } from '@capacitor/dialog';
-import { Device } from '@capacitor/device';
-import { Keyboard } from '@capacitor/keyboard';
+import { Haptics, ImpactStyle } from '@capacitor/haptics'; // Native touch feedback
+import { Dialog } from '@capacitor/dialog'; // Native iOS alerts/confirmations
+import { Device } from '@capacitor/device'; // Native device info
+import { Keyboard } from '@capacitor/keyboard'; // Native keyboard management
 
 const STORAGE_KEY = 'ios_ai_chat_sessions_v1';
 const MODEL_STORAGE_KEY = 'ios_ai_chat_selected_model';
@@ -681,14 +681,14 @@ const App: React.FC = () => {
                 <div className="space-y-8">
                   <div className="grid grid-cols-2 gap-4">
                     <div className="bg-blue-50 p-5 rounded-[24px] border border-blue-100">
-                      <div className="text-3xl mb-3">🔒</div>
-                      <h3 className="font-bold text-sm text-blue-900">History Privacy</h3>
-                      <p className="text-[11px] text-blue-700 leading-snug mt-1.5">Your chat history is saved 100% locally. No accounts needed.</p>
+                      <div className="text-3xl mb-3">📱</div>
+                      <h3 className="font-bold text-sm text-blue-900">Native iOS</h3>
+                      <p className="text-[11px] text-blue-700 leading-snug mt-1.5">Full-screen immersion with haptic feedback & system controls.</p>
                     </div>
                     <div className="bg-azure-50 p-5 rounded-[24px] border border-azure-100">
-                      <div className="text-3xl mb-3">⚡</div>
-                      <h3 className="font-bold text-sm text-blue-900">Fast & Free</h3>
-                      <p className="text-[11px] text-blue-700 leading-snug mt-1.5">Gemini-powered lightning responses.</p>
+                      <div className="text-3xl mb-3">🔒</div>
+                      <h3 className="font-bold text-sm text-blue-900">Sovereign Data</h3>
+                      <p className="text-[11px] text-blue-700 leading-snug mt-1.5">No accounts. Your history stays on your iPhone.</p>
                     </div>
                   </div>
 
@@ -719,8 +719,8 @@ const App: React.FC = () => {
                       <div className="flex items-start space-x-4">
                         <div className="w-10 h-10 rounded-2xl bg-zinc-100 flex items-center justify-center flex-shrink-0 text-lg shadow-sm">🎯</div>
                         <div>
-                          <p className="font-bold text-sm">Coda Core Tools</p>
-                          <p className="text-[12px] text-zinc-500 font-medium leading-relaxed">Long-press any bubble to refine tone or expand logic.</p>
+                          <p className="font-bold text-sm">Haptic Mastery</p>
+                          <p className="text-[12px] text-zinc-500 font-medium leading-relaxed">Feel the app respond. Native vibration feedback on every major action.</p>
                         </div>
                       </div>
                     </div>

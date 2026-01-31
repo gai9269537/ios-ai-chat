@@ -1,68 +1,58 @@
-# 💎 Coda AI: Premium User Workspace
+# 💎 Coda AI: Premium Native User Guide
 
-Welcome to **Coda AI**, the ultimate sanctuary for proactive intelligence and data sovereignty. This workspace is designed to transform the way you interact with AI, providing a high-performance environment that is as beautiful as it is secure.
-
----
-
-## ✨ The Coda Experience
-
-### 🌊 Fluid & Glass
-Coda AI utilizes a modern **Glassmorphism** design system. Navigation headers, input fields, and priority sheets use real-time Gaussian blur effects to provide depth and focus, ensuring your content remains the centerpiece of the experience.
-
-### ⚡ Instant Perception (Splash)
-Every launch of Coda AI is met with a high-fidelity **Precision Splash**. This isn't just a loading screen; it's a recalibration of the "Coda Core," ensuring your local environment is ready for instant responses.
+Welcome to **Coda AI**, a high-performance native iOS architecture designed to transform the way you interact with AI. This is a sanctuary for proactive intelligence, where beauty meets absolute data sovereignty.
 
 ---
 
-## 🚀 Mastering Your Workspace
+## ✨ The Premium Native Experience
 
-### 🏛️ Smart Workspaces
-1. **Contextual Project Labs**: Filter your sessions using the category picker at the top. Use the **"+ Add Lab"** button to create custom categories with unique identities.
-2. **Infinite Creation**: Tap the **Compose Icon** (Top-Right) or just start typing in the bottom bar to spin up a new high-speed thread.
-3. **Session & Lab Management**: Use the **Edit** button in the header to manage your workspace. In Edit Mode:
-    - **Reorder Sessions**: Use arrows to move threads up or down.
-    - **Manage Labs**: Tap a category button to rename it or tap the red delete icon to remove it.
-4. **Intelligence Toggle**: Use the **Gear Icon** inside any chat to access model switching (**Pro vs. Flash**) and advanced summarization tools.
+### 🌊 Full-Screen Immersion
+Coda AI is optimized for the latest iPhone displays. It respects the **Safe Area** (notches and home indicators), providing a seamless edge-to-edge glassmorphism interface that feels integrated into the operating system.
+
+### 📳 Tactile Response (Haptics)
+Unlike web apps, Coda AI speaks to your senses. We've integrated the **iOS Haptic Engine** to provide subtle, physical confirmation for:
+- Sending messages.
+- Creating and identifying Labs.
+- Deleting workspaces or sessions.
+
+### 🚀 Instant Awakening (Splash)
+The app features a custom **Native Splash Screen**. Every time you tap the Coda icon, the app performs a silent handshake with your local database while providing a premium visual transition.
+
+---
+
+## 🏛️ Mastering Your Workspaces
+
+1. **Contextual Project Labs**: Filter your sessions using the horizontal category picker.
+2. **Infinite Creation**: Tap the **Compose Icon** or use the bottom bar to spin up new threads.
+3. **Session & Lab Management**: Tap **Edit** to enter a sovereign management mode (move sessions, rename labs, or purge data).
+4. **Native Dialogs**: All confirmations use standard iOS system alerts, ensuring a familiar and secure feel.
+
+---
+
+## 💡 Native Integration Tips
 
 ### 🎙️ Proactive Voice UI
-Use the **Microphone** button in the input bar for hands-free command entry. Coda AI's voice engine is designed for rapid-fire ideation and task capture while you're on the move.
+Tap the **Microphone** to dictate. Our integration with native speech services allows for rapid ideation while you're on the move.
 
-### 💡 Proactive Tooling
-*   **Precision Chips**: Context-aware follow-up actions appear dynamically above your keyboard. They predict your next move—whether you need examples, a shorter version, or a professional email draft.
-*   **Recursive Prompting**: The **"Use as Prompt"** button turns any AI response into a platform for your next instruction. This creates a powerful feedback loop for high-fidelity creative output.
-
----
-
-## 🏗️ Coda Core Tools (Long-Press Actions)
-
-Unlock the full potential of your text by **long-pressing** any message bubble. This activates the **Coda Core UI**:
-
-| Tool | Benefit |
-| :--- | :--- |
-| **📋 Copy** | Direct secure transfer to your system clipboard. |
-| **📉 Refine (Shorten)** | Instantly crystallize complex arguments into key takeaways. |
-| **📈 Elaborate (Expand)** | Command the Coda Core to dive deeper into technical or creative concepts. |
-| **👔 Executive (Professional)** | Re-architect your message for formal, high-stakes communication. |
-| **👟 Converse (Casual)** | Humanize technical text for friendly, relatable contexts. |
+### ⌨️ Intelligent Layout
+The UI is built to react to the **iOS Keyboard**. It automatically adjusts padding and focus when you begin typing, ensuring your conversation remains visible at all times.
 
 ---
 
 ## 🔒 The Sovereignty Guarantee
 
-### Transparent Processing
-While Coda AI is built on the principle of **Data Sovereignty**, it leverages the world-class intelligence of Google's Gemini models.
-- **Local History**: Your chat history is stored **locally** on your device. We do not maintain server-side logs of your personal threads.
-- **Google Processing**: Messages are sent to Google Gemini for real-time processing. This transmission is governed by Google's Privacy Policy.
-- **Bring Your Own Key**: Coda AI allows you to provide your own Gemini API Key, giving you full control over your usage and data policy with Google.
-- **Portable Sovereignty**: You have full control over your conversation exports via the **Share** menu (available in .txt and .yaml).
+- **Local Persistence**: Your history never leaves your iPhone. We use local storage engines that are encrypted by iOS.
+- **BYOK Architecture**: By providing your own Gemini API Key, you control the relationship with the model provider.
+- **Sovereign Export**: Share your conversations instantly via the Share menu in structured .txt or .yaml formats.
 
 ---
 
-## ⚙️ Workspace Configuration
-- **API Configuration**: Access the **API Settings** via the Export menu to manage your Gemini Key.
+## ⚙️ App Configuration
+
+- **Haptics**: Always-on for premium tactile feedback.
 - **Model Switching**: Toggle between the speed of **Flash** and the deep reasoning of **Pro**.
-- **Daily Quotas**: Monitor your proactive credits in real-time.
+- **Credits**: Monitor your proactive usage in the New Session screen.
 
 ---
 
-*Thank you for trusting Coda AI. Build the future, stay private.*
+*Thank you for choosing Coda AI. Built for the iPhone. Designed for You.*

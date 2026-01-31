@@ -16,6 +16,8 @@ This document outlines the steps taken and the remaining requirements to submit 
    - **Logo**: A high-end 1024x1024 app icon (`app_icon.png`) has been generated and applied.
    - **Splash Screen**: A native-style splash screen with the Coda AI logo and pulsing animation.
    - **Design System**: Fully implemented glassmorphism, premium typography (Outfit/Inter), and a brand-driven color palette.
+   - **Native Feedback**: Integrated iOS Haptic Engine for tactile user feedback.
+   - **System Integration**: Replaced web alerts with native system dialogs and handled safe area insets for iPhone notches.
 
 ## 🚀 Next Steps (Action Required)
 
