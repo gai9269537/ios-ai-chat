@@ -143,7 +143,23 @@ const App: React.FC = () => {
 
   const handleSendMessage = async (customPrompt?: string) => {
     const messageText = customPrompt || inputValue;
-    if (!messageText.trim() || isLoading || !currentSessionId) return;
+    if (!messageText.trim() || isLoading) return;
+
+    let targetSessionId = currentSessionId;
+
+    // If no active session (Home Screen), create one automatically
+    if (!targetSessionId) {
+      const newId = Date.now().toString();
+      const newSession: ChatSession = {
+        id: newId,
+        title: messageText.length > 30 ? messageText.substring(0, 30) + '...' : messageText,
+        messages: [],
+        lastUpdated: new Date()
+      };
+      setSessions(prev => [newSession, ...prev]);
+      setCurrentSessionId(newId);
+      targetSessionId = newId;
+    }
 
     const userMessage: Message = { id: Date.now().toString(), role: 'user', content: messageText, timestamp: new Date(), status: 'sent' };
     const assistantId = (Date.now() + 1).toString();
@@ -152,10 +168,7 @@ const App: React.FC = () => {
     if (!customPrompt) setInputValue('');
     setIsLoading(true);
 
-    let updatedTitle = currentSession?.title;
-    if (messages.length === 0) updatedTitle = messageText.length > 30 ? messageText.substring(0, 30) + '...' : messageText;
-
-    setSessions(prev => prev.map(s => s.id === currentSessionId ? { ...s, title: updatedTitle || s.title, lastUpdated: new Date(), messages: [...s.messages, userMessage, assistantPlaceholder] } : s));
+    setSessions(prev => prev.map(s => s.id === targetSessionId ? { ...s, lastUpdated: new Date(), messages: [...s.messages, userMessage, assistantPlaceholder] } : s));
 
     if (isUsageLimitReached()) {
       alert("Daily free limit reached. We are keeping it free for now by limiting daily usage. Please come back tomorrow!");
@@ -167,12 +180,12 @@ const App: React.FC = () => {
       let accumulated = "";
       await getGeminiResponse(messageText, selectedModel, [], (chunk) => {
         accumulated += chunk;
-        setSessions(prev => prev.map(s => s.id === currentSessionId ? { ...s, messages: s.messages.map(msg => msg.id === assistantId ? { ...msg, content: accumulated } : msg) } : s));
+        setSessions(prev => prev.map(s => s.id === targetSessionId ? { ...s, messages: s.messages.map(msg => msg.id === assistantId ? { ...msg, content: accumulated } : msg) } : s));
       });
       incrementUsage();
-      setSessions(prev => prev.map(s => s.id === currentSessionId ? { ...s, messages: s.messages.map(msg => msg.id === assistantId ? { ...msg, status: 'sent' } : msg) } : s));
+      setSessions(prev => prev.map(s => s.id === targetSessionId ? { ...s, messages: s.messages.map(msg => msg.id === assistantId ? { ...msg, status: 'sent' } : msg) } : s));
     } catch (error) {
-      setSessions(prev => prev.map(s => s.id === currentSessionId ? { ...s, messages: s.messages.map(msg => msg.id === assistantId ? { ...msg, content: "Error communicating with AI.", status: 'error' } : msg) } : s));
+      setSessions(prev => prev.map(s => s.id === targetSessionId ? { ...s, messages: s.messages.map(msg => msg.id === assistantId ? { ...msg, content: "Error communicating with AI.", status: 'error' } : msg) } : s));
     } finally { setIsLoading(false); }
   };
 
@@ -391,25 +404,27 @@ const App: React.FC = () => {
               ))}
             </div>
 
-            <div className="p-4 pb-12 coda-glass shadow-2xl z-50">
-              <div className="flex flex-col space-y-4">
-                {messages.length > 0 && messages[messages.length - 1].role === 'assistant' && !isLoading && (
-                  <div className="flex space-x-2.5 overflow-x-auto no-scrollbar pb-1 px-1">
-                    {["Ask for examples", "Shorten this", "Turn into an email"].map((p, i) => (
-                      <button key={i} onClick={() => handleSendMessage(p)} className="flex-shrink-0 px-5 py-2.5 bg-white border border-blue-100 rounded-full text-[13px] font-bold text-blue-600 hover:bg-blue-50 active:scale-95 transition-all whitespace-nowrap shadow-sm">
-                        {p}
-                      </button>
-                    ))}
+            {!isEditMode && (
+              <div className="p-4 pb-12 coda-glass shadow-2xl z-50 animate-in slide-in-from-bottom duration-500">
+                <div className="flex flex-col space-y-4">
+                  {messages.length > 0 && messages[messages.length - 1].role === 'assistant' && !isLoading && (
+                    <div className="flex space-x-2.5 overflow-x-auto no-scrollbar pb-1 px-1">
+                      {["Ask for examples", "Shorten this", "Turn into an email"].map((p, i) => (
+                        <button key={i} onClick={() => handleSendMessage(p)} className="flex-shrink-0 px-5 py-2.5 bg-white border border-blue-100 rounded-full text-[13px] font-bold text-blue-600 hover:bg-blue-50 active:scale-95 transition-all whitespace-nowrap shadow-sm">
+                          {p}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                  <div className="flex items-end space-x-3">
+                    <div className="flex-1 bg-white rounded-[32px] px-6 py-3.5 flex items-center min-h-[56px] border border-blue-100 focus-within:border-blue-500 focus-within:shadow-[0_0_0_4px_rgba(0,122,255,0.05)] transition-all">
+                      <textarea value={inputValue} onChange={(e) => setInputValue(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && (e.preventDefault(), handleSendMessage())} placeholder={!currentSessionId ? "Start a new project..." : "Message Coda AI..."} className="w-full bg-transparent border-none focus:ring-0 text-[16px] font-medium resize-none py-0.5 leading-tight text-zinc-800 placeholder:text-zinc-400" rows={1} />
+                    </div>
+                    <button onClick={() => handleSendMessage()} disabled={!inputValue.trim() || isLoading} className={`w-13 h-13 min-w-[52px] min-h-[52px] rounded-full flex items-center justify-center transition-all shadow-xl ${!inputValue.trim() || isLoading ? 'bg-zinc-100 text-zinc-300' : 'bg-blue-600 text-white shadow-blue-500/30 active:scale-90 active:rotate-12'}`}><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-7 h-7 -rotate-45 ml-1"><path d="M3.478 2.405a.75.75 0 00-.926.94l2.432 7.905H13.5a.75.75 0 010 1.5H4.984l-2.432 7.905a.75.75 0 00.926.94 60.519 60.519 0 0018.445-8.986.75.75 0 000-1.218A60.517 60.517 0 003.478 2.405z" /></svg></button>
                   </div>
-                )}
-                <div className="flex items-end space-x-3">
-                  <div className="flex-1 bg-white rounded-[32px] px-6 py-3.5 flex items-center min-h-[56px] border border-blue-100 focus-within:border-blue-500 focus-within:shadow-[0_0_0_4px_rgba(0,122,255,0.05)] transition-all">
-                    <textarea value={inputValue} onChange={(e) => setInputValue(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && (e.preventDefault(), handleSendMessage())} placeholder="Message Coda AI..." className="w-full bg-transparent border-none focus:ring-0 text-[16px] font-medium resize-none py-0.5 leading-tight text-zinc-800 placeholder:text-zinc-400" rows={1} />
-                  </div>
-                  <button onClick={() => handleSendMessage()} disabled={!inputValue.trim() || isLoading} className={`w-13 h-13 min-w-[52px] min-h-[52px] rounded-full flex items-center justify-center transition-all shadow-xl ${!inputValue.trim() || isLoading ? 'bg-zinc-100 text-zinc-300' : 'bg-blue-600 text-white shadow-blue-500/30 active:scale-90 active:rotate-12'}`}><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-7 h-7 -rotate-45 ml-1"><path d="M3.478 2.405a.75.75 0 00-.926.94l2.432 7.905H13.5a.75.75 0 010 1.5H4.984l-2.432 7.905a.75.75 0 00.926.94 60.519 60.519 0 0018.445-8.986.75.75 0 000-1.218A60.517 60.517 0 003.478 2.405z" /></svg></button>
                 </div>
               </div>
-            </div>
+            )}
           </>
         )}
 
