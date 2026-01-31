@@ -570,6 +570,20 @@ const App: React.FC = () => {
                         </div>
                       </div>
                       <div className="flex items-start space-x-4">
+                        <div className="w-10 h-10 rounded-2xl bg-zinc-100 flex items-center justify-center flex-shrink-0 text-lg shadow-sm">🎤</div>
+                        <div>
+                          <p className="font-bold text-sm">Voice Mastery</p>
+                          <p className="text-[12px] text-zinc-500 font-medium leading-relaxed">Tap the mic to dictate proactive tasks. Perfect for on-the-go ideation.</p>
+                        </div>
+                      </div>
+                      <div className="flex items-start space-x-4">
+                        <div className="w-10 h-10 rounded-2xl bg-zinc-100 flex items-center justify-center flex-shrink-0 text-lg shadow-sm">🗂️</div>
+                        <div>
+                          <p className="font-bold text-sm">Project Logic</p>
+                          <p className="text-[12px] text-zinc-500 font-medium leading-relaxed">Use category tabs (Work, Dev, Ideas) to isolate your cognitive contexts.</p>
+                        </div>
+                      </div>
+                      <div className="flex items-start space-x-4">
                         <div className="w-10 h-10 rounded-2xl bg-zinc-100 flex items-center justify-center flex-shrink-0 text-lg shadow-sm">🎯</div>
                         <div>
                           <p className="font-bold text-sm">Coda Core Tools</p>

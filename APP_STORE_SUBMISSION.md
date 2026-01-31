@@ -7,7 +7,12 @@ This document outlines the steps taken and the remaining requirements to submit 
 2. **Platform Configuration**: Initialized iOS platform in the `ios/` directory.
 3. **Info.plist Compliance**: Added mandatory privacy usage descriptions for Speech Recognition and Microphone access.
 4. **Encryption Exemption**: Configured the app to specify it does not use non-exempt encryption (simplifies submission).
-5. **Premium Branding**: 
+5. **Premium Proactive Features**: 
+   - **Contextual Workspaces**: Implemented project categorization (Work, Ideas, Dev, Life) with a custom horizontal picker.
+   - **Voice UI Integration**: Fully wired speech-to-text functionality for hands-free creative input.
+   - **BYOK Architecture**: Implemented an "AI Activation" flow allowing users to provide their own Gemini API Keys, enhancing user control and security.
+   - **Advanced Management**: Added support for reordering and deleting workspaces via a dedicated "Edit Mode."
+6. **Premium Branding**: 
    - **Logo**: A high-end 1024x1024 app icon (`app_icon.png`) has been generated and applied.
    - **Splash Screen**: A native-style splash screen with the Coda AI logo and pulsing animation.
    - **Design System**: Fully implemented glassmorphism, premium typography (Outfit/Inter), and a brand-driven color palette.

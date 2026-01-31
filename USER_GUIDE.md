@@ -17,9 +17,13 @@ Every launch of Coda AI is met with a high-fidelity **Precision Splash**. This i
 ## 🚀 Mastering Your Workspace
 
 ### 🏛️ Smart Workspaces
-1. **The Entry View**: Your previous sessions are organized into "Workspaces" with dynamic icons and live time-stamps.
-2. **Infinite Creation**: Tap the **Compose Icon** (Top-Right) to spin up a new high-speed thread.
-3. **Session Intelligence**: Use the **Gear Icon** inside any chat to access model switching (**Pro vs. Flash**) and advanced summarization tools.
+1. **Contextual Project Labs**: Filter your sessions using the category picker at the top (**Work**, **Ideas**, **Dev**, **Life**). Each project lab maintains its own context and visual identity.
+2. **Infinite Creation**: Tap the **Compose Icon** (Top-Right) or just start typing in the bottom bar to spin up a new high-speed thread.
+3. **Session Management**: Use the **Edit** button in the header to reorder your workspaces or delete those that are no longer productive.
+4. **Intelligence Toggle**: Use the **Gear Icon** inside any chat to access model switching (**Pro vs. Flash**) and advanced summarization tools.
+
+### 🎙️ Proactive Voice UI
+Use the **Microphone** button in the input bar for hands-free command entry. Coda AI's voice engine is designed for rapid-fire ideation and task capture while you're on the move.
 
 ### 💡 Proactive Tooling
 *   **Precision Chips**: Context-aware follow-up actions appear dynamically above your keyboard. They predict your next move—whether you need examples, a shorter version, or a professional email draft.

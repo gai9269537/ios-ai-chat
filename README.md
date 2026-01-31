@@ -1,20 +1,66 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+# 💎 Coda AI: Premium Proactive Workspace
 
-# Run and deploy your AI Studio app
+Coda AI is a high-fidelity, private AI chat application designed for the "Sovereign Creator." It combines a premium iOS-style glassmorphism interface with local-first data management and multi-project support.
 
-This contains everything you need to run your app locally.
+---
 
-View your app in AI Studio: https://ai.studio/apps/drive/1Erqit32fZF9iDNq2jtQqMngS04BeKCZe
+## ✨ Key Features
 
-## Run Locally
+- **🏛️ Smart Workspaces**: Organize your intelligence into projects like **Work**, **Ideas**, **Dev**, and **Life**.
+- **🎤 Voice Activation**: Fully integrated speech-to-text for proactive, hands-free task creation.
+- **🔒 Data Sovereignty**: Your chat history is stored **100% locally** on your device.
+- **⚡ Proactive Tooling**: Long-press messages to refine, expand, or humanize text instantly.
+- **🛠️ Chat Management**: Effortlessly reorder, edit, and delete your workspaces.
+- **🔑 Bring Your Own Key (BYOK)**: Secure entry for your own Gemini API Key for total usage control.
 
-**Prerequisites:**  Node.js
+---
 
+## 🚀 Setting Up Your Workspace
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+### Prerequisites 
+- Node.js (v18+)
+- npm
+
+### 🛠️ Installation
+
+1. **Clone and Install**
+   ```bash
+   npm install
+   ```
+
+2. **Configure Environment** (Optional - you can also enter your key inside the app)
+   Create a `.env.local` file and add:
+   ```env
+   GEMINI_API_KEY=your_actual_key_here
+   ```
+
+3. **Ignition**
+   ```bash
+   npm run dev
+   ```
+   *The app will automatically start at [http://localhost:3000](http://localhost:3000)*
+
+---
+
+## 📱 Mobile Deployment (Capacitor)
+
+Coda AI is built to be deployed as a native iOS app.
+
+1. **Build the Web Asset**
+   ```bash
+   npm run build
+   ```
+
+2. **Sync with iOS**
+   ```bash
+   npx cap sync ios
+   ```
+
+3. **Open in Xcode**
+   ```bash
+   npx cap open ios
+   ```
+
+---
+
+*Built for privacy. Designed for performance. Welcome to the Coda Core.*
