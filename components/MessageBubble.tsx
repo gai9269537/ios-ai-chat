@@ -53,33 +53,37 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ message, onAction, onUseA
   ];
 
   return (
-    <div className={`flex w-full mb-4 group ${isUser ? 'justify-end' : 'justify-start'}`}>
+    <div className={`flex w-full mb-5 group ${isUser ? 'justify-end' : 'justify-start'} animate-in slide-in-from-bottom-2 duration-300`}>
       <div className={`relative flex flex-col max-w-[85%] ${isUser ? 'items-end' : 'items-start'}`}>
         <div
           onPointerDown={handleLongPress}
           onPointerUp={cancelLongPress}
           onPointerLeave={cancelLongPress}
           onContextMenu={(e) => { e.preventDefault(); setShowMenu(true); }}
-          className={`px-4 py-2.5 rounded-2xl text-[15px] leading-relaxed shadow-sm transition-all duration-200 cursor-pointer active:scale-[0.98] ${isUser
-            ? 'bg-[#007AFF] text-white rounded-tr-none ml-12'
-            : 'bg-white border border-zinc-100 text-black rounded-tl-none mr-12'
+          className={`px-5 py-3 rounded-[24px] text-[15.5px] font-medium leading-[1.45] shadow-sm transition-all duration-300 cursor-pointer active:scale-[0.98] ${isUser
+            ? 'bg-gradient-to-tr from-[#007AFF] to-[#00C6FF] text-white rounded-tr-none ml-10 shadow-blue-500/10'
+            : 'bg-white border border-white text-zinc-800 rounded-tl-none mr-10 shadow-sm'
             }`}
         >
           <div className="whitespace-pre-wrap break-words">
             {message.content}
             {message.status === 'sending' && (
-              <span className="inline-block ml-1 animate-pulse">...</span>
+              <span className="inline-flex ml-1.5 space-x-0.5">
+                <span className="w-1 h-1 bg-current rounded-full animate-bounce [animation-duration:1s]"></span>
+                <span className="w-1 h-1 bg-current rounded-full animate-bounce [animation-duration:1s] [animation-delay:0.2s]"></span>
+                <span className="w-1 h-1 bg-current rounded-full animate-bounce [animation-duration:1s] [animation-delay:0.4s]"></span>
+              </span>
             )}
           </div>
 
-          <div className="flex items-center justify-between mt-1 space-x-4">
-            <span className={`text-[10px] opacity-60 ${isUser ? 'text-white/80' : 'text-zinc-400'}`}>
+          <div className="flex items-center justify-between mt-1.5 pt-1 space-x-6 border-t border-white/10">
+            <span className={`text-[10px] font-bold tracking-tight ${isUser ? 'text-white/60' : 'text-zinc-400'}`}>
               {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
             </span>
             {message.role === 'assistant' && message.status === 'sent' && (
               <button
                 onClick={(e) => { e.stopPropagation(); onUseAsPrompt?.(message.content); }}
-                className="text-[10px] font-semibold text-[#007AFF] hover:opacity-70 active:scale-95 transition-all"
+                className="text-[10px] font-black uppercase tracking-widest text-blue-600 hover:text-blue-700 active:scale-90 transition-all"
               >
                 Use as Prompt
               </button>
@@ -90,16 +94,17 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ message, onAction, onUseA
         {showMenu && (
           <div
             ref={menuRef}
-            className={`absolute z-[100] w-56 bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-zinc-200 py-1.5 animate-in fade-in zoom-in duration-150 ${isUser ? 'right-0 top-1/2' : 'left-0 top-1/2'
+            className={`absolute z-[100] w-64 bg-white/95 backdrop-blur-2xl rounded-3xl shadow-2xl border border-zinc-200 py-2.5 animate-in zoom-in-95 fade-in duration-200 ${isUser ? 'right-0 top-1/2 -translate-y-1/2' : 'left-0 top-1/2 -translate-y-1/2'
               }`}
           >
+            <div className="px-5 py-1.5 mb-1 text-[10px] font-black text-zinc-400 uppercase tracking-widest border-b border-zinc-100">Message Actions</div>
             {menuActions.map((item, i) => (
               <button
                 key={i}
                 onClick={(e) => { e.stopPropagation(); item.action(); setShowMenu(false); }}
-                className="w-full px-4 py-2.5 text-left text-[14px] font-medium text-zinc-800 hover:bg-zinc-100 flex items-center space-x-3 active:bg-zinc-200 transition-colors"
+                className="w-full px-5 py-3 text-left text-[14.5px] font-bold text-zinc-800 hover:bg-blue-50 hover:text-blue-600 flex items-center space-x-4 active:bg-blue-100 transition-all"
               >
-                <span className="text-lg">{item.icon}</span>
+                <span className="text-xl opacity-80">{item.icon}</span>
                 <span>{item.label}</span>
               </button>
             ))}
@@ -107,12 +112,13 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ message, onAction, onUseA
         )}
 
         {copied && (
-          <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-zinc-800/90 text-white text-[10px] px-3 py-1 rounded-full animate-in fade-in slide-in-from-bottom-1 z-[110]">
+          <div className="absolute -top-10 left-1/2 -translate-x-1/2 bg-zinc-900/90 backdrop-blur-md text-white text-[11px] font-bold px-4 py-1.5 rounded-full animate-in slide-in-from-bottom-2 duration-300 z-[110] shadow-xl">
             Copied to Clipboard
           </div>
         )}
       </div>
     </div>
+
   );
 };
 

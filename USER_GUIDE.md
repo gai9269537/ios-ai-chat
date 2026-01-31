@@ -1,64 +1,61 @@
-# 📱 Coda AI: User Guide
+# 💎 Coda AI: Premium User Workspace
 
-Welcome to **Coda AI**, your premium, proactive, and privacy-first AI workspace. This guide will help you master the tools that make Coda AI the most efficient way to build, write, and manage your tasks on mobile.
-
----
-
-## 🚀 Getting Started
-
-### Starting a New Session
-1. Launch Coda AI to see your active workspaces.
-2. Tap the **Compose Icon** in the top right to create a new session.
-3. Use the **Smart Starters** to jump into complex tasks immediately, or type your own prompt.
+Welcome to **Coda AI**, the ultimate sanctuary for proactive intelligence and data sovereignty. This workspace is designed to transform the way you interact with AI, providing a high-performance environment that is as beautiful as it is secure.
 
 ---
 
-## 💡 Proactive Interaction Features
+## ✨ The Coda Experience
 
-### Smart Prompt Starters
-Coda AI provides intelligent starters on every new chat screen. These are designed to leverage the "Coda Core" for complex reasoning, summarizing, and planning.
+### 🌊 Fluid & Glass
+Coda AI utilizes a modern **Glassmorphism** design system. Navigation headers, input fields, and priority sheets use real-time Gaussian blur effects to provide depth and focus, ensuring your content remains the centerpiece of the experience.
 
-### Contextual Precision Chips
-After every response, Coda AI generates precision chips above the keyboard for instant refinement:
-- **"Ask for examples"**: Deep dive into specifics.
-- **"Shorten this"**: Condense long explanations.
-- **"Turn into an email"**: Instantly reformat the content for professional communication.
-
-### Use as Prompt
-The "Use as Prompt" action allows you to grab any AI response and move it to your input field. This is the fastest way to iterate on stories, code snippets, or professional drafts.
+### ⚡ Instant Perception (Splash)
+Every launch of Coda AI is met with a high-fidelity **Precision Splash**. This isn't just a loading screen; it's a recalibration of the "Coda Core," ensuring your local environment is ready for instant responses.
 
 ---
 
-## 🛠️ Advanced Response Tools (Coda Core)
+## 🚀 Mastering Your Workspace
 
-**Long-press** any message bubble to reveal the **Coda Core Tools**:
+### 🏛️ Smart Workspaces
+1. **The Entry View**: Your previous sessions are organized into "Workspaces" with dynamic icons and live time-stamps.
+2. **Infinite Creation**: Tap the **Compose Icon** (Top-Right) to spin up a new high-speed thread.
+3. **Session Intelligence**: Use the **Gear Icon** inside any chat to access model switching (**Pro vs. Flash**) and advanced summarization tools.
 
-| Tool | Action |
+### 💡 Proactive Tooling
+*   **Precision Chips**: Context-aware follow-up actions appear dynamically above your keyboard. They predict your next move—whether you need examples, a shorter version, or a professional email draft.
+*   **Recursive Prompting**: The **"Use as Prompt"** button turns any AI response into a platform for your next instruction. This creates a powerful feedback loop for high-fidelity creative output.
+
+---
+
+## 🏗️ Coda Core Tools (Long-Press Actions)
+
+Unlock the full potential of your text by **long-pressing** any message bubble. This activates the **Coda Core UI**:
+
+| Tool | Benefit |
 | :--- | :--- |
-| **📋 Copy Message** | Copy to system clipboard. |
-| **📉 Shorten** | Automate the condensing of complex data. |
-| **📈 Expand** | Command the AI to elaborate on a specific point. |
-| **👔 Professional Tone** | Refine text for business and formal documentation. |
-| **👟 Casual Tone** | Reformat text for friendly, conversational use. |
+| **📋 Copy** | Direct secure transfer to your system clipboard. |
+| **📉 Refine (Shorten)** | Instantly crystallize complex arguments into key takeaways. |
+| **📈 Elaborate (Expand)** | Command the Coda Core to dive deeper into technical or creative concepts. |
+| **👔 Executive (Professional)** | Re-architect your message for formal, high-stakes communication. |
+| **👟 Converse (Casual)** | Humanize technical text for friendly, relatable contexts. |
 
 ---
 
-## 🔒 Privacy & Sovereignty
+## 🔒 The Sovereignty Guarantee
 
-### Coda Core Privacy
-Coda AI is built on the principle of **Data Sovereignty**. 
-- Your history is stored **locally** on your device.
-- No cloud accounts are required.
-- You have full control over your conversation exports via the **Share** menu (available in .txt and .yaml).
-
----
-
-## ⚙️ Settings
-Tap the **Gear Icon** in any session to:
-- Switch between **Gemini Pro** (Best for reasoning) and **Gemini Flash** (Best for speed).
-- Access **Help & Support** for tutorials on advanced features.
-- Review your **Daily Usage Quota**.
+### Coda Core Privacy™
+Your privacy is not a feature; it is our foundation.
+- **Device-Local Sovereignty**: All session history and model preferences are stored locally on your device.
+- **Zero Cloud Footprint**: We do not maintain server-side logs of your conversations.
+- **Verifiable Exports**: Export your data at any time in **Plain Text** or **YAML** formats for personal archiving or technical integration.
 
 ---
 
-*Thank you for choosing Coda AI. Build faster, write better, and stay private.*
+## ⚙️ Workspace Configuration
+- **Model Switching**: Toggle between the speed of **Flash** and the deep reasoning of **Pro**.
+- **Daily Quotas**: Monitor your proactive credits in real-time to manage your cognitive load.
+- **Global Documentation**: Access this guide and the App Store submission roadmap via the **Help & Support** sheet.
+
+---
+
+*Thank you for trusting Coda AI. Build the future, stay private.*
