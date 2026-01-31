@@ -27,6 +27,7 @@ const App: React.FC = () => {
   const [selectedModel, setSelectedModel] = useState<ModelName>(ModelName.GEMINI_FLASH);
   const [chatSummary, setChatSummary] = useState<string | null>(null);
   const [isSummarizing, setIsSummarizing] = useState(false);
+  const [showHelp, setShowHelp] = useState(false);
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const recognitionRef = useRef<any>(null);
@@ -259,6 +260,10 @@ const App: React.FC = () => {
                         {isSummarizing ? <div className="w-3 h-3 border-2 border-blue-600 border-t-transparent animate-spin rounded-full" /> : <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>}
                         <span>Summarize Chat</span>
                       </button>
+                      <button onClick={() => { setShowHelp(true); setShowModelMenu(false); }} className="w-full px-4 py-2 text-left text-sm text-zinc-600 hover:bg-[#F2F2F7] flex items-center space-x-2">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                        <span>Help & Support</span>
+                      </button>
                       <div className="h-px bg-zinc-100 my-1"></div>
                       <a href="https://example.com/privacy" target="_blank" rel="noopener noreferrer" className="w-full px-4 py-2 text-left text-xs text-zinc-400 hover:text-zinc-600">Privacy Policy</a>
                     </div>
@@ -363,6 +368,83 @@ const App: React.FC = () => {
                     </button>
                   </div>
                   <button onClick={() => setChatSummary(null)} className="w-full bg-[#007AFF] text-white py-3 rounded-xl font-semibold active:opacity-80 transition-opacity">Done</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* iOS-Style Help Sheet */}
+        {showHelp && (
+          <div className="absolute inset-0 z-[100] flex items-end">
+            <div className="absolute inset-0 bg-black/40 animate-in fade-in duration-300" onClick={() => setShowHelp(false)} />
+            <div className="w-full bg-white rounded-t-[20px] shadow-2xl z-[110] animate-in slide-in-from-bottom duration-300 max-h-[85%] flex flex-col">
+              <div className="flex justify-center p-3">
+                <div className="w-10 h-1 bg-zinc-300 rounded-full" />
+              </div>
+              <div className="px-6 pb-8 pt-2 overflow-y-auto">
+                <div className="flex justify-between items-center mb-6">
+                  <h2 className="text-xl font-bold">Help & Support</h2>
+                  <button onClick={() => setShowHelp(false)} className="bg-zinc-100 p-1 rounded-full"><svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg></button>
+                </div>
+                <div className="space-y-6">
+                  {/* Key Benefits Section */}
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="bg-blue-50/50 p-4 rounded-2xl border border-blue-100/50">
+                      <div className="text-2xl mb-2">🔒</div>
+                      <h3 className="font-bold text-sm text-blue-900">Total Privacy</h3>
+                      <p className="text-[11px] text-blue-700/80 leading-tight mt-1">Chat history stays 100% on your device. No accounts, no tracking.</p>
+                    </div>
+                    <div className="bg-purple-50/50 p-4 rounded-2xl border border-purple-100/50">
+                      <div className="text-2xl mb-2">⚡</div>
+                      <h3 className="font-bold text-sm text-purple-900">Fast & Free</h3>
+                      <p className="text-[11px] text-purple-700/80 leading-tight mt-1">Powered by Gemini for instant answers without subscriptions.</p>
+                    </div>
+                  </div>
+
+                  <section>
+                    <h3 className="text-sm font-bold text-zinc-900 mb-3 flex items-center"><svg className="w-4 h-4 mr-2 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg> Boost Your Productivity</h3>
+                    <div className="space-y-4">
+                      <div className="flex items-start space-x-3">
+                        <div className="w-8 h-8 rounded-full bg-zinc-100 flex items-center justify-center flex-shrink-0 text-sm">💡</div>
+                        <div>
+                          <p className="font-semibold text-sm">One-Tap Prompting</p>
+                          <p className="text-xs text-zinc-500">Stop typing repetitive prompts. Use "Smart Chips" for instant summaries, emails, and translations.</p>
+                        </div>
+                      </div>
+                      <div className="flex items-start space-x-3">
+                        <div className="w-8 h-8 rounded-full bg-zinc-100 flex items-center justify-center flex-shrink-0 text-sm">✍️</div>
+                        <div>
+                          <p className="font-semibold text-sm">Perfect Your Writing</p>
+                          <p className="text-xs text-zinc-500">Long-press any response to instantly change its tone, shorten it, or expand into details.</p>
+                        </div>
+                      </div>
+                      <div className="flex items-start space-x-3">
+                        <div className="w-8 h-8 rounded-full bg-zinc-100 flex items-center justify-center flex-shrink-0 text-sm">♻️</div>
+                        <div>
+                          <p className="font-semibold text-sm">Zero Friction Iteration</p>
+                          <p className="text-xs text-zinc-500">Use "Use as Prompt" to reuse and refine AI answers without copy-pasting manually.</p>
+                        </div>
+                      </div>
+                    </div>
+                  </section>
+
+                  <section className="bg-zinc-900 text-white p-5 rounded-2xl shadow-lg relative overflow-hidden">
+                    <div className="relative z-10">
+                      <h3 className="text-sm font-bold mb-1">Why Choose AI Chat Pro?</h3>
+                      <p className="text-xs text-zinc-400 leading-relaxed italic">"The most professional way to use AI on mobile. No cloud storage, no complex sign-ups, just pure productivity."</p>
+                    </div>
+                    <div className="absolute -right-4 -bottom-4 w-24 h-24 bg-blue-500/20 rounded-full blur-2xl"></div>
+                  </section>
+                </div>
+
+                <div className="mt-8">
+                  <button onClick={() => setShowHelp(false)} className="w-full bg-[#007AFF] text-white py-4 rounded-2xl font-bold shadow-lg shadow-blue-500/20 active:scale-[0.98] transition-all focus:outline-none">Start Creating</button>
+                  <div className="flex justify-center items-center space-x-4 mt-6">
+                    <span className="text-[10px] text-zinc-400">Ver 1.0.0</span>
+                    <span className="w-1 h-1 bg-zinc-300 rounded-full"></span>
+                    <span className="text-[10px] text-zinc-400 uppercase tracking-widest font-bold">Privacy First Certified</span>
+                  </div>
                 </div>
               </div>
             </div>
