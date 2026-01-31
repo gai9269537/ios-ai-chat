@@ -5,6 +5,11 @@ import MessageBubble from './components/MessageBubble';
 import { Message, ChatSession, ModelName, Project } from './types';
 import { getGeminiResponse, summarizeChat } from './services/gemini';
 import { isUsageLimitReached, incrementUsage, getRemainingMessages } from './services/usage';
+import { Capacitor } from '@capacitor/core';
+import { Haptics, ImpactStyle } from '@capacitor/haptics';
+import { Dialog } from '@capacitor/dialog';
+import { Device } from '@capacitor/device';
+import { Keyboard } from '@capacitor/keyboard';
 
 const STORAGE_KEY = 'ios_ai_chat_sessions_v1';
 const MODEL_STORAGE_KEY = 'ios_ai_chat_selected_model';
@@ -64,6 +69,15 @@ const App: React.FC = () => {
   const [showSettings, setShowSettings] = useState(false);
   const [tempApiKey, setTempApiKey] = useState(geminiApiKey);
   const [activeProjectId, setActiveProjectId] = useState('all');
+  const [isNative, setIsNative] = useState(Capacitor.isNativePlatform());
+
+  useEffect(() => {
+    const checkPlatform = async () => {
+      const info = await Device.getInfo();
+      setIsNative(Capacitor.isNativePlatform());
+    };
+    checkPlatform();
+  }, []);
 
   // Robust project initialization
   const [projects, setProjects] = useState<Project[]>(() => {
@@ -82,11 +96,20 @@ const App: React.FC = () => {
   const [editingProject, setEditingProject] = useState<Project | null>(null);
   const [projectForm, setProjectForm] = useState({ name: '', emoji: '' });
 
-  const deleteSession = (e: React.MouseEvent, id: string) => {
+  const deleteSession = async (e: React.MouseEvent, id: string) => {
     e.stopPropagation();
-    if (window.confirm("Delete this workspace and all its data?")) {
+    Haptics.impact({ style: ImpactStyle.Medium });
+    const { value } = await Dialog.confirm({
+      title: 'Delete Workspace',
+      message: 'Are you sure you want to delete this workspace and all its data?',
+      okButtonTitle: 'Delete',
+      cancelButtonTitle: 'Cancel'
+    });
+
+    if (value) {
       setSessions(prev => prev.filter(s => s.id !== id));
       if (currentSessionId === id) setCurrentSessionId(null);
+      Haptics.notification({ type: ImpactStyle.Heavy as any });
     }
   };
 
@@ -118,11 +141,20 @@ const App: React.FC = () => {
     setProjectForm({ name: '', emoji: '' });
   };
 
-  const deleteProject = (id: string) => {
-    if (window.confirm("Delete this workspace category? Sessions within it won't be deleted but will appear in 'All'.")) {
+  const deleteProject = async (id: string) => {
+    Haptics.impact({ style: ImpactStyle.Medium });
+    const { value } = await Dialog.confirm({
+      title: 'Delete Category',
+      message: "Delete this workspace category? Sessions within it won't be deleted but will appear in 'All'.",
+      okButtonTitle: 'Delete',
+      cancelButtonTitle: 'Cancel'
+    });
+
+    if (value) {
       setProjects(prev => prev.filter(p => p.id !== id));
       setSessions(prev => prev.map(s => s.projectId === id ? { ...s, projectId: undefined, projectEmoji: undefined } : s));
       if (activeProjectId === id) setActiveProjectId('all');
+      Haptics.notification({ type: ImpactStyle.Heavy as any });
     }
   };
 
@@ -250,10 +282,15 @@ const App: React.FC = () => {
     setSessions(prev => prev.map(s => s.id === targetSessionId ? { ...s, lastUpdated: new Date(), messages: [...s.messages, userMessage, assistantPlaceholder] } : s));
 
     if (isUsageLimitReached()) {
-      alert("Daily free limit reached. We are keeping it free for now by limiting daily usage. Please come back tomorrow!");
+      await Dialog.alert({
+        title: 'Limit Reached',
+        message: "Daily free limit reached. We are keeping it free for now by limiting daily usage. Please come back tomorrow!"
+      });
       setIsLoading(false);
       return;
     }
+
+    Haptics.impact({ style: ImpactStyle.Light });
 
     try {
       let accumulated = "";
@@ -318,8 +355,8 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-zinc-100 p-0 sm:p-4 font-['Inter']">
-      <div className="relative w-full h-screen sm:h-[844px] sm:w-[390px] bg-[#F2F2F7] sm:rounded-[40px] shadow-2xl overflow-hidden flex flex-col border-[8px] border-zinc-900 sm:border-[12px]">
+    <div className={`flex items-center justify-center min-h-screen bg-zinc-100 font-['Inter'] ${isNative ? 'p-0' : 'p-0 sm:p-4'}`}>
+      <div className={`relative w-full h-screen bg-[#F2F2F7] overflow-hidden flex flex-col ${isNative ? 'rounded-0' : 'sm:h-[844px] sm:w-[390px] sm:rounded-[40px] shadow-2xl border-[8px] border-zinc-900 sm:border-[12px]'}`}>
 
         {isSplashVisible ? (
           <div className="absolute inset-0 z-[200] bg-white flex flex-col items-center justify-center animate-in fade-out duration-500 delay-1000 fill-mode-forwards">
@@ -347,7 +384,7 @@ const App: React.FC = () => {
                       <h1 className="text-2xl font-bold font-['Outfit'] coda-gradient-text tracking-tight">Coda AI</h1>
                     </div>
                   ) : (
-                    <button onClick={() => setCurrentSessionId(null)} className="flex items-center text-[#007AFF] active:opacity-50 transition-opacity">
+                    <button onClick={() => { setCurrentSessionId(null); Haptics.impact({ style: ImpactStyle.Light }); }} className="flex items-center text-[#007AFF] active:opacity-50 transition-opacity">
                       <svg className="w-6 h-6 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" /></svg>
                       <div className="flex flex-col items-start -space-y-1 mt-0.5">
                         <span className="text-[9px] font-black uppercase tracking-[0.1em] text-zinc-500">{currentSession?.projectEmoji || '🌟'} {currentSession?.projectId || 'Workspace'}</span>
@@ -433,7 +470,7 @@ const App: React.FC = () => {
                   <div className="relative">
                     <div className="flex items-center space-x-3 overflow-x-auto no-scrollbar px-1 py-2">
                       <button
-                        onClick={() => { setEditingProject(null); setProjectForm({ name: '', emoji: '' }); setShowProjectModal(true); }}
+                        onClick={() => { setEditingProject(null); setProjectForm({ name: '', emoji: '' }); setShowProjectModal(true); Haptics.impact({ style: ImpactStyle.Medium }); }}
                         className="flex items-center space-x-2 px-5 py-2.5 rounded-2xl bg-blue-600 text-white border-2 border-blue-600 shadow-xl shadow-blue-500/30 active:scale-95 transition-all whitespace-nowrap flex-shrink-0"
                       >
                         <span className="text-lg font-bold">+</span>
