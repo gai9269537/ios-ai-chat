@@ -115,28 +115,31 @@ const App: React.FC = () => {
     setCurrentSessionId(newSession.id);
   };
 
-  const handleSendMessage = async () => {
-    if (!inputValue.trim() || isLoading || !currentSessionId) return;
-    const userMessage: Message = { id: Date.now().toString(), role: 'user', content: inputValue, timestamp: new Date(), status: 'sent' };
+  const handleSendMessage = async (customPrompt?: string) => {
+    const messageText = customPrompt || inputValue;
+    if (!messageText.trim() || isLoading || !currentSessionId) return;
+
+    const userMessage: Message = { id: Date.now().toString(), role: 'user', content: messageText, timestamp: new Date(), status: 'sent' };
     const assistantId = (Date.now() + 1).toString();
     const assistantPlaceholder: Message = { id: assistantId, role: 'assistant', content: '', timestamp: new Date(), status: 'sending' };
-    const prompt = inputValue;
-    setInputValue('');
+
+    if (!customPrompt) setInputValue('');
     setIsLoading(true);
 
     let updatedTitle = currentSession?.title;
-    if (messages.length === 0) updatedTitle = prompt.length > 30 ? prompt.substring(0, 30) + '...' : prompt;
+    if (messages.length === 0) updatedTitle = messageText.length > 30 ? messageText.substring(0, 30) + '...' : messageText;
 
     setSessions(prev => prev.map(s => s.id === currentSessionId ? { ...s, title: updatedTitle || s.title, lastUpdated: new Date(), messages: [...s.messages, userMessage, assistantPlaceholder] } : s));
 
     if (isUsageLimitReached()) {
       alert("Daily free limit reached. We are keeping it free for now by limiting daily usage. Please come back tomorrow!");
+      setIsLoading(false);
       return;
     }
 
     try {
       let accumulated = "";
-      await getGeminiResponse(prompt, selectedModel, [], (chunk) => {
+      await getGeminiResponse(messageText, selectedModel, [], (chunk) => {
         accumulated += chunk;
         setSessions(prev => prev.map(s => s.id === currentSessionId ? { ...s, messages: s.messages.map(msg => msg.id === assistantId ? { ...msg, content: accumulated } : msg) } : s));
       });
@@ -266,10 +269,19 @@ const App: React.FC = () => {
 
             <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 py-6 space-y-2 bg-[#F2F2F7]">
               {messages.length === 0 ? (
-                <div className="flex flex-col items-center justify-center h-full text-zinc-400 py-20 px-10 text-center">
+                <div className="flex flex-col items-center justify-center h-full text-zinc-400 py-10 px-10 text-center">
                   <div className="w-16 h-16 rounded-full bg-white flex items-center justify-center shadow-sm mb-4"><svg className="w-8 h-8 text-blue-500" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.477 2 2 6.477 2 12c0 1.891.527 3.653 1.438 5.16L2 22l4.84-1.438C8.347 21.473 10.109 22 12 22c5.523 0 10-4.477 10-10S17.523 2 12 2z" /></svg></div>
                   <p className="font-semibold text-zinc-900 mb-2">New Secure Conversation</p>
                   <p className="text-xs text-zinc-500 mb-6 leading-relaxed">Your data stay on this device. We don't share your chats or personal info with anyone.</p>
+
+                  <div className="grid grid-cols-1 gap-2 w-full mb-6">
+                    {["Summarize this article", "Explain a concept like I'm 10", "Plan a weekend trip to..."].map((p, i) => (
+                      <button key={i} onClick={() => handleSendMessage(p)} className="text-left px-4 py-3 bg-white border border-zinc-100 rounded-xl text-sm text-zinc-700 hover:bg-zinc-50 active:scale-95 transition-all shadow-sm">
+                        {p}
+                      </button>
+                    ))}
+                  </div>
+
                   <div className="bg-blue-50 px-4 py-2 rounded-lg inline-flex items-center space-x-2">
                     <span className="text-[10px] uppercase font-bold text-blue-600 tracking-wider">Free Plan</span>
                     <span className="text-[11px] text-blue-500">{getRemainingMessages()} messages left today</span>
@@ -279,11 +291,22 @@ const App: React.FC = () => {
             </div>
 
             <div className="p-4 pb-8 border-t border-zinc-200 bg-white/90 ios-blur">
-              <div className="flex items-end space-x-2">
-                <div className="flex-1 bg-[#F2F2F7] rounded-[24px] px-4 py-2 flex items-center min-h-[44px]">
-                  <textarea value={inputValue} onChange={(e) => setInputValue(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && (e.preventDefault(), handleSendMessage())} placeholder="iMessage" className="w-full bg-transparent border-none focus:ring-0 text-[16px] resize-none py-1 leading-tight" rows={1} />
+              <div className="flex flex-col space-y-3">
+                {messages.length > 0 && messages[messages.length - 1].role === 'assistant' && !isLoading && (
+                  <div className="flex space-x-2 overflow-x-auto no-scrollbar pb-1">
+                    {["Ask for examples", "Shorten this", "Turn into an email"].map((p, i) => (
+                      <button key={i} onClick={() => handleSendMessage(p)} className="flex-shrink-0 px-3 py-1.5 bg-zinc-100 rounded-full text-[13px] text-zinc-700 hover:bg-zinc-200 active:scale-95 transition-all whitespace-nowrap">
+                        {p}
+                      </button>
+                    ))}
+                  </div>
+                )}
+                <div className="flex items-end space-x-2">
+                  <div className="flex-1 bg-[#F2F2F7] rounded-[24px] px-4 py-2 flex items-center min-h-[44px]">
+                    <textarea value={inputValue} onChange={(e) => setInputValue(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && (e.preventDefault(), handleSendMessage())} placeholder="iMessage" className="w-full bg-transparent border-none focus:ring-0 text-[16px] resize-none py-1 leading-tight" rows={1} />
+                  </div>
+                  <button onClick={() => handleSendMessage()} disabled={!inputValue.trim() || isLoading} className={`w-9 h-9 rounded-full flex items-center justify-center ${!inputValue.trim() || isLoading ? 'bg-zinc-200 text-zinc-400' : 'bg-[#007AFF] text-white shadow-md'}`}><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5 -rotate-90"><path d="M3.478 2.405a.75.75 0 00-.926.94l2.432 7.905H13.5a.75.75 0 010 1.5H4.984l-2.432 7.905a.75.75 0 00.926.94 60.519 60.519 0 0018.445-8.986.75.75 0 000-1.218A60.517 60.517 0 003.478 2.405z" /></svg></button>
                 </div>
-                <button onClick={handleSendMessage} disabled={!inputValue.trim() || isLoading} className={`w-9 h-9 rounded-full flex items-center justify-center ${!inputValue.trim() || isLoading ? 'bg-zinc-200 text-zinc-400' : 'bg-[#007AFF] text-white shadow-md'}`}><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5 -rotate-90"><path d="M3.478 2.405a.75.75 0 00-.926.94l2.432 7.905H13.5a.75.75 0 010 1.5H4.984l-2.432 7.905a.75.75 0 00.926.94 60.519 60.519 0 0018.445-8.986.75.75 0 000-1.218A60.517 60.517 0 003.478 2.405z" /></svg></button>
               </div>
             </div>
           </>
