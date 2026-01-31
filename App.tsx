@@ -26,7 +26,7 @@ const App: React.FC = () => {
   const [selectedModel, setSelectedModel] = useState<ModelName>(ModelName.GEMINI_FLASH);
   const [chatSummary, setChatSummary] = useState<string | null>(null);
   const [isSummarizing, setIsSummarizing] = useState(false);
-  
+
   const scrollRef = useRef<HTMLDivElement>(null);
   const recognitionRef = useRef<any>(null);
   const exportMenuRef = useRef<HTMLDivElement>(null);
@@ -92,7 +92,7 @@ const App: React.FC = () => {
     localStorage.setItem(MODEL_STORAGE_KEY, selectedModel);
   }, [selectedModel]);
 
-  const currentSession = useMemo(() => 
+  const currentSession = useMemo(() =>
     sessions.find(s => s.id === currentSessionId),
     [sessions, currentSessionId]
   );
@@ -161,8 +161,8 @@ const App: React.FC = () => {
     if (format === 'txt') {
       content = currentSession.messages.map(m => `[${m.timestamp.toLocaleString()}] ${m.role.toUpperCase()}:\n${m.content}\n${'-'.repeat(40)}`).join('\n\n');
     } else {
-      content = `session:\n  id: ${currentSession.id}\n  title: "${currentSession.title}"\nmessages:\n` + 
-                currentSession.messages.map(m => `  - role: ${m.role}\n    content: "${m.content.replace(/"/g, '\\"')}"`).join('\n');
+      content = `session:\n  id: ${currentSession.id}\n  title: "${currentSession.title}"\nmessages:\n` +
+        currentSession.messages.map(m => `  - role: ${m.role}\n    content: "${m.content.replace(/"/g, '\\"')}"`).join('\n');
     }
     const blob = new Blob([content], { type: format === 'txt' ? 'text/plain' : 'text/yaml' });
     const url = URL.createObjectURL(blob);
@@ -201,7 +201,7 @@ const App: React.FC = () => {
                 <h1 className="text-3xl font-bold">Messages</h1>
                 <div className="flex items-center space-x-2">
                   <button onClick={createNewSession} className="text-[#007AFF] bg-[#007AFF]/10 p-2 rounded-full active:scale-90 transition-transform">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" /><path d="M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4 9.5-9.5z" /></svg>
                   </button>
                 </div>
               </div>
@@ -212,7 +212,7 @@ const App: React.FC = () => {
                   <div className="w-12 h-12 rounded-full bg-gradient-to-tr from-zinc-200 to-zinc-300 flex-shrink-0 flex items-center justify-center text-white font-bold">{s.title.charAt(0).toUpperCase()}</div>
                   <div className="flex-1 min-w-0">
                     <div className="flex justify-between items-baseline mb-0.5"><h3 className="font-semibold text-[15px] truncate">{s.title}</h3><span className="text-[12px] text-zinc-400">{s.lastUpdated.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span></div>
-                    <p className="text-[13px] text-zinc-500 truncate">{s.messages.length > 0 ? s.messages[s.messages.length-1].content : 'No messages yet'}</p>
+                    <p className="text-[13px] text-zinc-500 truncate">{s.messages.length > 0 ? s.messages[s.messages.length - 1].content : 'No messages yet'}</p>
                   </div>
                 </div>
               ))}
@@ -249,6 +249,8 @@ const App: React.FC = () => {
                         {isSummarizing ? <div className="w-3 h-3 border-2 border-blue-600 border-t-transparent animate-spin rounded-full" /> : <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>}
                         <span>Summarize Chat</span>
                       </button>
+                      <div className="h-px bg-zinc-100 my-1"></div>
+                      <a href="https://example.com/privacy" target="_blank" rel="noopener noreferrer" className="w-full px-4 py-2 text-left text-xs text-zinc-400 hover:text-zinc-600">Privacy Policy</a>
                     </div>
                   )}
                 </div>
@@ -295,17 +297,17 @@ const App: React.FC = () => {
                     </p>
                   ))}
                 </div>
-                
+
                 <div className="mt-8 space-y-3">
                   <div className="flex space-x-3">
-                    <button 
+                    <button
                       onClick={() => exportSummary('txt')}
                       className="flex-1 bg-zinc-100 text-zinc-900 py-3 rounded-xl font-semibold flex items-center justify-center space-x-2 active:bg-zinc-200 transition-colors"
                     >
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
                       <span>Save TXT</span>
                     </button>
-                    <button 
+                    <button
                       onClick={() => exportSummary('yaml')}
                       className="flex-1 bg-zinc-100 text-zinc-900 py-3 rounded-xl font-semibold flex items-center justify-center space-x-2 active:bg-zinc-200 transition-colors"
                     >
