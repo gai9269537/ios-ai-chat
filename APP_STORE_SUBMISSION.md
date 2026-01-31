@@ -39,10 +39,9 @@ You will need to provide these in App Store Connect:
 ### 5. Privacy Policy Template
 You can host this on a simple GitHub Page or your website:
 > **Coda AI Privacy Policy**
-> - **Coda Core Privacy**: We do not store your chat data on our servers.
-> - **Local Sovereignty**: All chat history is stored 100% locally on your device.
-> - **Processing**: Speech data is processed by Apple's built-in speech recognition and Google's Gemini API.
-> - **Zero Tracking**: We do not track users, sell data to third parties, or use analytics that identify individuals.
+> - **Local Sovereignty**: All chat history is stored 100% locally on your device. We do not store your data on our servers.
+> - **Processing Transparency**: Messages are sent to Google's Gemini API for processing. Your data is handled according to Google's Privacy Policy during this exchange.
+> - **Zero Third-Party Tracking**: We do not track users, sell data, or use invasive analytics.
 
 ## 📝 Compliance Checklist
 - [ ] **No Hidden Features**: The app matches its description.

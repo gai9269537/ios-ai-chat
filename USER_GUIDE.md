@@ -43,18 +43,19 @@ Unlock the full potential of your text by **long-pressing** any message bubble. 
 
 ## 🔒 The Sovereignty Guarantee
 
-### Coda Core Privacy™
-Your privacy is not a feature; it is our foundation.
-- **Device-Local Sovereignty**: All session history and model preferences are stored locally on your device.
-- **Zero Cloud Footprint**: We do not maintain server-side logs of your conversations.
-- **Verifiable Exports**: Export your data at any time in **Plain Text** or **YAML** formats for personal archiving or technical integration.
+### Transparent Processing
+While Coda AI is built on the principle of **Data Sovereignty**, it leverages the world-class intelligence of Google's Gemini models.
+- **Local History**: Your chat history is stored **locally** on your device. We do not maintain server-side logs of your personal threads.
+- **Google Processing**: Messages are sent to Google Gemini for real-time processing. This transmission is governed by Google's Privacy Policy.
+- **Bring Your Own Key**: Coda AI allows you to provide your own Gemini API Key, giving you full control over your usage and data policy with Google.
+- **Portable Sovereignty**: You have full control over your conversation exports via the **Share** menu (available in .txt and .yaml).
 
 ---
 
 ## ⚙️ Workspace Configuration
+- **API Configuration**: Access the **API Settings** via the Export menu to manage your Gemini Key.
 - **Model Switching**: Toggle between the speed of **Flash** and the deep reasoning of **Pro**.
-- **Daily Quotas**: Monitor your proactive credits in real-time to manage your cognitive load.
-- **Global Documentation**: Access this guide and the App Store submission roadmap via the **Help & Support** sheet.
+- **Daily Quotas**: Monitor your proactive credits in real-time.
 
 ---
 

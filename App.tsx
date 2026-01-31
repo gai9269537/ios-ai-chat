@@ -2,12 +2,20 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
 import StatusBar from './components/StatusBar';
 import MessageBubble from './components/MessageBubble';
-import { Message, ChatSession, ModelName } from './types';
+import { Message, ChatSession, ModelName, Project } from './types';
 import { getGeminiResponse, summarizeChat } from './services/gemini';
 import { isUsageLimitReached, incrementUsage, getRemainingMessages } from './services/usage';
 
 const STORAGE_KEY = 'ios_ai_chat_sessions_v1';
 const MODEL_STORAGE_KEY = 'ios_ai_chat_selected_model';
+
+const DEFAULT_PROJECTS: Project[] = [
+  { id: 'all', name: 'All', emoji: '🌟', color: 'bg-zinc-100' },
+  { id: 'work', name: 'Work', emoji: '💼', color: 'bg-blue-50' },
+  { id: 'creative', name: 'Ideas', emoji: '🎨', color: 'bg-purple-50' },
+  { id: 'coding', name: 'Dev', emoji: '💻', color: 'bg-zinc-800' },
+  { id: 'personal', name: 'Life', emoji: '🏠', color: 'bg-orange-50' },
+];
 
 declare global {
   interface Window {
@@ -30,6 +38,10 @@ const App: React.FC = () => {
   const [showHelp, setShowHelp] = useState(false);
   const [isSplashVisible, setIsSplashVisible] = useState(true);
   const [isEditMode, setIsEditMode] = useState(false);
+  const [geminiApiKey, setGeminiApiKey] = useState(localStorage.getItem('gemini_api_key_v1') || '');
+  const [showSettings, setShowSettings] = useState(false);
+  const [tempApiKey, setTempApiKey] = useState(geminiApiKey);
+  const [activeProjectId, setActiveProjectId] = useState('all');
 
   const deleteSession = (e: React.MouseEvent, id: string) => {
     e.stopPropagation();
@@ -92,6 +104,13 @@ const App: React.FC = () => {
   }, []);
 
   useEffect(() => {
+    if (geminiApiKey) {
+      import('./services/gemini').then(m => m.setGeminiApiKey(geminiApiKey));
+      localStorage.setItem('gemini_api_key_v1', geminiApiKey);
+    }
+  }, [geminiApiKey]);
+
+  useEffect(() => {
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) {
       try {
@@ -131,11 +150,14 @@ const App: React.FC = () => {
   }, [messages, currentSessionId]);
 
   const createNewSession = () => {
+    const activeProject = DEFAULT_PROJECTS.find(p => p.id === activeProjectId);
     const newSession: ChatSession = {
       id: Date.now().toString(),
       title: 'New Chat',
       messages: [],
-      lastUpdated: new Date()
+      lastUpdated: new Date(),
+      projectId: activeProjectId === 'all' ? undefined : activeProjectId,
+      projectEmoji: activeProject?.emoji
     };
     setSessions(prev => [newSession, ...prev]);
     setCurrentSessionId(newSession.id);
@@ -150,11 +172,14 @@ const App: React.FC = () => {
     // If no active session (Home Screen), create one automatically
     if (!targetSessionId) {
       const newId = Date.now().toString();
+      const activeProject = DEFAULT_PROJECTS.find(p => p.id === activeProjectId);
       const newSession: ChatSession = {
         id: newId,
         title: messageText.length > 30 ? messageText.substring(0, 30) + '...' : messageText,
         messages: [],
-        lastUpdated: new Date()
+        lastUpdated: new Date(),
+        projectId: activeProjectId === 'all' ? undefined : activeProjectId,
+        projectEmoji: activeProject?.emoji
       };
       setSessions(prev => [newSession, ...prev]);
       setCurrentSessionId(newId);
@@ -270,7 +295,10 @@ const App: React.FC = () => {
                   ) : (
                     <button onClick={() => setCurrentSessionId(null)} className="flex items-center text-[#007AFF] active:opacity-50 transition-opacity">
                       <svg className="w-6 h-6 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" /></svg>
-                      <span className="text-[17px] font-semibold">Chats</span>
+                      <div className="flex flex-col items-start -space-y-1 mt-0.5">
+                        <span className="text-[9px] font-black uppercase tracking-[0.1em] text-zinc-500">{currentSession?.projectEmoji || '🌟'} {currentSession?.projectId || 'Workspace'}</span>
+                        <span className="text-[17px] font-bold">Back</span>
+                      </div>
                     </button>
                   )}
                 </div>
@@ -293,9 +321,11 @@ const App: React.FC = () => {
                       <div ref={exportMenuRef}>
                         <button onClick={() => setShowExportMenu(!showExportMenu)} className="text-[#007AFF] p-1.5 active:scale-90 transition-transform"><svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg></button>
                         {showExportMenu && (
-                          <div className="absolute right-0 top-12 w-40 bg-white/95 backdrop-blur-2xl rounded-2xl shadow-2xl border border-zinc-200 py-2 z-[70] animate-in zoom-in duration-200">
-                            <button onClick={() => exportChat('txt')} className="w-full px-4 py-2 text-left text-sm font-bold text-zinc-800 hover:bg-zinc-100">Export as TXT</button>
-                            <button onClick={() => exportChat('yaml')} className="w-full px-4 py-2 text-left text-sm font-bold text-zinc-800 hover:bg-zinc-100">Export as YAML</button>
+                          <div className="absolute right-0 top-12 w-48 bg-white/95 backdrop-blur-2xl rounded-2xl shadow-2xl border border-zinc-200 py-2.5 z-[70] animate-in zoom-in duration-200">
+                            <button onClick={() => exportChat('txt')} className="w-full px-5 py-2.5 text-left text-sm font-bold text-zinc-900 hover:bg-zinc-50 flex items-center justify-between"><span>Export TXT</span><span className="text-[10px] text-zinc-400">.txt</span></button>
+                            <button onClick={() => exportChat('yaml')} className="w-full px-5 py-2.5 text-left text-sm font-bold text-zinc-900 hover:bg-zinc-50 flex items-center justify-between"><span>Export YAML</span><span className="text-[10px] text-zinc-400">.yaml</span></button>
+                            <div className="h-px bg-zinc-100 my-2"></div>
+                            <button onClick={() => { setShowSettings(true); setShowExportMenu(false); }} className="w-full px-5 py-2.5 text-left text-sm font-bold text-blue-600 hover:bg-blue-50">API Settings</button>
                           </div>
                         )}
                       </div>
@@ -328,42 +358,69 @@ const App: React.FC = () => {
               {!currentSessionId ? (
                 <div className="space-y-4 animate-in fade-in slide-in-from-bottom-5 duration-700">
                   <div className="flex flex-col items-center mb-8 mt-4 text-center">
-                    <img src="/logo.png" alt="Logo" className="w-20 h-20 mb-4 animate-pulse-soft" />
-                    <h2 className="text-xl font-bold font-['Outfit'] text-zinc-900">Your Workspaces</h2>
-                    <p className="text-xs text-zinc-500 font-medium">Continue your proactive projects</p>
+                    <img src="/logo.png" alt="Logo" className="w-16 h-16 mb-3 animate-pulse-soft" />
+                    <h2 className="text-xl font-black font-['Outfit'] text-zinc-900 tracking-tight">Your Workspaces</h2>
+                    <p className="text-[10px] text-zinc-400 font-black uppercase tracking-[0.2em]">Sovereign Control</p>
                   </div>
-                  {sessions.map((s, idx) => (
-                    <div key={s.id} onClick={() => !isEditMode && setCurrentSessionId(s.id)} className={`px-5 py-4 bg-white rounded-[26px] flex items-center space-x-4 transition-all group shadow-sm border border-white/50 ${isEditMode ? 'cursor-default ring-2 ring-blue-500/10' : 'active:scale-[0.98] cursor-pointer hover:shadow-md'}`}>
-                      {isEditMode ? (
-                        <button onClick={(e) => deleteSession(e, s.id)} className="w-10 h-10 rounded-2xl bg-red-50 text-red-500 flex items-center justify-center flex-shrink-0 active:scale-90 transition-transform hover:bg-red-500 hover:text-white">
-                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" /></svg>
+
+                  {/* Project Picker */}
+                  {!isEditMode && (
+                    <div className="flex space-x-3 overflow-x-auto no-scrollbar px-1 py-2">
+                      {DEFAULT_PROJECTS.map(project => (
+                        <button
+                          key={project.id}
+                          onClick={() => setActiveProjectId(project.id)}
+                          className={`flex items-center space-x-2 px-5 py-2.5 rounded-2xl whitespace-nowrap transition-all duration-300 border-2 ${activeProjectId === project.id
+                            ? 'bg-zinc-900 text-white border-zinc-900 shadow-xl scale-105'
+                            : 'bg-white text-zinc-500 border-white hover:border-zinc-100'
+                            }`}
+                        >
+                          <span className="text-lg">{project.emoji}</span>
+                          <span className="text-[13px] font-black uppercase tracking-widest">{project.name}</span>
                         </button>
-                      ) : (
-                        <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-[#007AFF] to-[#00C6FF] flex-shrink-0 flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-blue-500/20">{s.title.charAt(0).toUpperCase()}</div>
-                      )}
-                      <div className="flex-1 min-w-0">
-                        <div className="flex justify-between items-baseline mb-0.5">
-                          <h3 className="font-bold text-[16px] truncate text-zinc-900">{s.title}</h3>
-                          {!isEditMode && <span className="text-[11px] font-extrabold text-[#007AFF] opacity-70">{s.lastUpdated.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>}
-                        </div>
-                        <p className="text-[13px] font-medium text-zinc-500 truncate">{s.messages.length > 0 ? s.messages[s.messages.length - 1].content : 'No messages yet'}</p>
-                      </div>
-                      {isEditMode && (
-                        <div className="flex flex-col space-y-1">
-                          <button onClick={(e) => moveSession(e, idx, 'up')} disabled={idx === 0} className="w-8 h-8 rounded-lg flex items-center justify-center text-zinc-400 hover:bg-zinc-100 disabled:opacity-10 transition-colors">
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 15l7-7 7 7" /></svg>
-                          </button>
-                          <button onClick={(e) => moveSession(e, idx, 'down')} disabled={idx === sessions.length - 1} className="w-8 h-8 rounded-lg flex items-center justify-center text-zinc-400 hover:bg-zinc-100 disabled:opacity-10 transition-colors">
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M19 9l-7 7-7-7" /></svg>
-                          </button>
-                        </div>
-                      )}
+                      ))}
                     </div>
-                  ))}
-                  {sessions.length === 0 && (
-                    <div className="text-center py-20">
-                      <div className="w-20 h-20 bg-zinc-200/50 rounded-full flex items-center justify-center mx-auto mb-4"><svg className="w-8 h-8 text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg></div>
-                      <p className="text-zinc-500 font-bold">Start your first session</p>
+                  )}
+
+                  <div className="space-y-3 pt-2">
+                    {sessions
+                      .filter(s => activeProjectId === 'all' || s.projectId === activeProjectId)
+                      .map((s, idx) => (
+                        <div key={s.id} onClick={() => !isEditMode && setCurrentSessionId(s.id)} className={`px-5 py-4 bg-white rounded-[26px] flex items-center space-x-4 transition-all group shadow-sm border border-white/50 ${isEditMode ? 'cursor-default ring-2 ring-blue-500/10' : 'active:scale-[0.98] cursor-pointer hover:shadow-md'}`}>
+                          {isEditMode ? (
+                            <button onClick={(e) => deleteSession(e, s.id)} className="w-10 h-10 rounded-2xl bg-red-50 text-red-500 flex items-center justify-center flex-shrink-0 active:scale-90 transition-transform hover:bg-red-500 hover:text-white">
+                              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" /></svg>
+                            </button>
+                          ) : (
+                            <div className={`w-12 h-12 rounded-2xl flex-shrink-0 flex items-center justify-center text-white font-bold text-xl shadow-lg ${s.projectId ? 'bg-zinc-900 shadow-zinc-900/10' : 'bg-gradient-to-tr from-[#007AFF] to-[#00C6FF] shadow-blue-500/20'}`}>
+                              {s.projectEmoji || s.title.charAt(0).toUpperCase()}
+                            </div>
+                          )}
+                          <div className="flex-1 min-w-0">
+                            <div className="flex justify-between items-baseline mb-0.5">
+                              <h3 className="font-bold text-[16px] truncate text-zinc-900">{s.title}</h3>
+                              {!isEditMode && <span className="text-[11px] font-extrabold text-[#007AFF] opacity-70">{s.lastUpdated.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>}
+                            </div>
+                            <p className="text-[13px] font-medium text-zinc-500 truncate">{s.messages.length > 0 ? s.messages[s.messages.length - 1].content : 'No messages yet'}</p>
+                          </div>
+                          {isEditMode && (
+                            <div className="flex flex-col space-y-1">
+                              <button onClick={(e) => moveSession(e, idx, 'up')} disabled={idx === 0} className="w-8 h-8 rounded-lg flex items-center justify-center text-zinc-400 hover:bg-zinc-100 disabled:opacity-10 transition-colors">
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 15l7-7 7 7" /></svg>
+                              </button>
+                              <button onClick={(e) => moveSession(e, idx, 'down')} disabled={idx === sessions.length - 1} className="w-8 h-8 rounded-lg flex items-center justify-center text-zinc-400 hover:bg-zinc-100 disabled:opacity-10 transition-colors">
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M19 9l-7 7-7-7" /></svg>
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                  </div>
+                  {sessions.filter(s => activeProjectId === 'all' || s.projectId === activeProjectId).length === 0 && (
+                    <div className="text-center py-20 animate-in fade-in duration-700">
+                      <div className="w-20 h-20 bg-white rounded-[32px] flex items-center justify-center mx-auto mb-5 shadow-sm border border-zinc-100"><svg className="w-8 h-8 text-zinc-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg></div>
+                      <p className="text-zinc-500 font-black text-xs uppercase tracking-widest">Empty Workspace</p>
+                      <p className="text-zinc-400 text-[10px] mt-1">Start a {activeProjectId !== 'all' ? activeProjectId : 'new'} project below</p>
                     </div>
                   )}
                 </div>
@@ -418,7 +475,21 @@ const App: React.FC = () => {
                   )}
                   <div className="flex items-end space-x-3">
                     <div className="flex-1 bg-white rounded-[32px] px-6 py-3.5 flex items-center min-h-[56px] border border-blue-100 focus-within:border-blue-500 focus-within:shadow-[0_0_0_4px_rgba(0,122,255,0.05)] transition-all">
-                      <textarea value={inputValue} onChange={(e) => setInputValue(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && (e.preventDefault(), handleSendMessage())} placeholder={!currentSessionId ? "Start a new project..." : "Message Coda AI..."} className="w-full bg-transparent border-none focus:ring-0 text-[16px] font-medium resize-none py-0.5 leading-tight text-zinc-800 placeholder:text-zinc-400" rows={1} />
+                      <button
+                        onClick={() => {
+                          if (isListening) {
+                            recognitionRef.current?.stop();
+                            setIsListening(false);
+                          } else {
+                            setIsListening(true);
+                            recognitionRef.current?.start();
+                          }
+                        }}
+                        className={`mr-3 p-1 rounded-full transition-all ${isListening ? 'text-red-500 animate-pulse bg-red-50 scale-125' : 'text-zinc-400 hover:text-blue-500'}`}
+                      >
+                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" /></svg>
+                      </button>
+                      <textarea value={inputValue} onChange={(e) => setInputValue(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && (e.preventDefault(), handleSendMessage())} placeholder={!currentSessionId ? (activeProjectId === 'all' ? "Start a new project..." : `New ${activeProjectId} session...`) : "Message Coda AI..."} className="flex-1 bg-transparent border-none focus:ring-0 text-[16px] font-medium resize-none py-0.5 leading-tight text-zinc-800 placeholder:text-zinc-400" rows={1} />
                     </div>
                     <button onClick={() => handleSendMessage()} disabled={!inputValue.trim() || isLoading} className={`w-13 h-13 min-w-[52px] min-h-[52px] rounded-full flex items-center justify-center transition-all shadow-xl ${!inputValue.trim() || isLoading ? 'bg-zinc-100 text-zinc-300' : 'bg-blue-600 text-white shadow-blue-500/30 active:scale-90 active:rotate-12'}`}><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-7 h-7 -rotate-45 ml-1"><path d="M3.478 2.405a.75.75 0 00-.926.94l2.432 7.905H13.5a.75.75 0 010 1.5H4.984l-2.432 7.905a.75.75 0 00.926.94 60.519 60.519 0 0018.445-8.986.75.75 0 000-1.218A60.517 60.517 0 003.478 2.405z" /></svg></button>
                   </div>
@@ -478,8 +549,8 @@ const App: React.FC = () => {
                   <div className="grid grid-cols-2 gap-4">
                     <div className="bg-blue-50 p-5 rounded-[24px] border border-blue-100">
                       <div className="text-3xl mb-3">🔒</div>
-                      <h3 className="font-bold text-sm text-blue-900">Total Privacy</h3>
-                      <p className="text-[11px] text-blue-700 leading-snug mt-1.5">Your data stays 100% on device. No tracking.</p>
+                      <h3 className="font-bold text-sm text-blue-900">History Privacy</h3>
+                      <p className="text-[11px] text-blue-700 leading-snug mt-1.5">Your chat history is saved 100% locally. No accounts needed.</p>
                     </div>
                     <div className="bg-azure-50 p-5 rounded-[24px] border border-azure-100">
                       <div className="text-3xl mb-3">⚡</div>
@@ -510,10 +581,12 @@ const App: React.FC = () => {
 
                   <section className="bg-zinc-900 text-white p-6 rounded-[28px] shadow-2xl relative overflow-hidden">
                     <div className="relative z-10">
-                      <h3 className="text-sm font-black mb-2 uppercase tracking-widest text-[#007AFF]">The Coda Mission</h3>
-                      <p className="text-[13px] text-zinc-300 leading-relaxed italic font-medium">"Building the world's most proactive, secure AI workspace for the sovereign creator."</p>
+                      <h3 className="text-sm font-black mb-2 uppercase tracking-widest text-[#007AFF]">Data Transparency</h3>
+                      <p className="text-[12px] text-zinc-300 leading-relaxed font-bold">
+                        While your history is 100% local, Coda AI sends messages to Google's Gemini API for processing. Your data is governed by Google's Privacy Policy during transmission.
+                      </p>
                     </div>
-                    <div className="absolute right-0 bottom-0 w-32 h-32 bg-blue-500/20 rounded-full blur-[60px]"></div>
+                    <div className="absolute right-0 bottom-0 w-32 h-32 bg-blue-500/10 rounded-full blur-[60px]"></div>
                   </section>
                 </div>
                 <div className="mt-10">
