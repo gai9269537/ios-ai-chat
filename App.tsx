@@ -29,6 +29,25 @@ const App: React.FC = () => {
   const [isSummarizing, setIsSummarizing] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
   const [isSplashVisible, setIsSplashVisible] = useState(true);
+  const [isEditMode, setIsEditMode] = useState(false);
+
+  const deleteSession = (e: React.MouseEvent, id: string) => {
+    e.stopPropagation();
+    if (window.confirm("Delete this workspace and all its data?")) {
+      setSessions(prev => prev.filter(s => s.id !== id));
+      if (currentSessionId === id) setCurrentSessionId(null);
+    }
+  };
+
+  const moveSession = (e: React.MouseEvent, index: number, direction: 'up' | 'down') => {
+    e.stopPropagation();
+    const newSessions = [...sessions];
+    const targetIndex = direction === 'up' ? index - 1 : index + 1;
+    if (targetIndex >= 0 && targetIndex < newSessions.length) {
+      [newSessions[index], newSessions[targetIndex]] = [newSessions[targetIndex], newSessions[index]];
+      setSessions(newSessions);
+    }
+  };
 
   useEffect(() => {
     const timer = setTimeout(() => setIsSplashVisible(false), 1800);
@@ -243,7 +262,15 @@ const App: React.FC = () => {
                   )}
                 </div>
 
-                <div className="flex items-center space-x-2">
+                <div className="flex items-center space-x-3">
+                  {!currentSessionId && sessions.length > 0 && (
+                    <button
+                      onClick={() => setIsEditMode(!isEditMode)}
+                      className={`px-4 py-1.5 rounded-full text-[13px] font-black transition-all ${isEditMode ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20' : 'bg-zinc-100 text-zinc-500 hover:bg-zinc-200'}`}
+                    >
+                      {isEditMode ? 'Done' : 'Edit'}
+                    </button>
+                  )}
                   {!currentSessionId ? (
                     <button onClick={createNewSession} className="bg-zinc-100 hover:bg-zinc-200 text-[#007AFF] p-2.5 rounded-full active:scale-95 transition-all shadow-sm">
                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
@@ -292,13 +319,32 @@ const App: React.FC = () => {
                     <h2 className="text-xl font-bold font-['Outfit'] text-zinc-900">Your Workspaces</h2>
                     <p className="text-xs text-zinc-500 font-medium">Continue your proactive projects</p>
                   </div>
-                  {sessions.map(s => (
-                    <div key={s.id} onClick={() => setCurrentSessionId(s.id)} className="px-5 py-4 bg-white rounded-[26px] flex items-center space-x-4 active:scale-[0.98] transition-all cursor-pointer group shadow-sm border border-white/50">
-                      <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-[#007AFF] to-[#00C6FF] flex-shrink-0 flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-blue-500/20">{s.title.charAt(0).toUpperCase()}</div>
+                  {sessions.map((s, idx) => (
+                    <div key={s.id} onClick={() => !isEditMode && setCurrentSessionId(s.id)} className={`px-5 py-4 bg-white rounded-[26px] flex items-center space-x-4 transition-all group shadow-sm border border-white/50 ${isEditMode ? 'cursor-default ring-2 ring-blue-500/10' : 'active:scale-[0.98] cursor-pointer hover:shadow-md'}`}>
+                      {isEditMode ? (
+                        <button onClick={(e) => deleteSession(e, s.id)} className="w-10 h-10 rounded-2xl bg-red-50 text-red-500 flex items-center justify-center flex-shrink-0 active:scale-90 transition-transform hover:bg-red-500 hover:text-white">
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" /></svg>
+                        </button>
+                      ) : (
+                        <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-[#007AFF] to-[#00C6FF] flex-shrink-0 flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-blue-500/20">{s.title.charAt(0).toUpperCase()}</div>
+                      )}
                       <div className="flex-1 min-w-0">
-                        <div className="flex justify-between items-baseline mb-0.5"><h3 className="font-bold text-[16px] truncate text-zinc-900">{s.title}</h3><span className="text-[11px] font-extrabold text-[#007AFF] opacity-70">{s.lastUpdated.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span></div>
+                        <div className="flex justify-between items-baseline mb-0.5">
+                          <h3 className="font-bold text-[16px] truncate text-zinc-900">{s.title}</h3>
+                          {!isEditMode && <span className="text-[11px] font-extrabold text-[#007AFF] opacity-70">{s.lastUpdated.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>}
+                        </div>
                         <p className="text-[13px] font-medium text-zinc-500 truncate">{s.messages.length > 0 ? s.messages[s.messages.length - 1].content : 'No messages yet'}</p>
                       </div>
+                      {isEditMode && (
+                        <div className="flex flex-col space-y-1">
+                          <button onClick={(e) => moveSession(e, idx, 'up')} disabled={idx === 0} className="w-8 h-8 rounded-lg flex items-center justify-center text-zinc-400 hover:bg-zinc-100 disabled:opacity-10 transition-colors">
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 15l7-7 7 7" /></svg>
+                          </button>
+                          <button onClick={(e) => moveSession(e, idx, 'down')} disabled={idx === sessions.length - 1} className="w-8 h-8 rounded-lg flex items-center justify-center text-zinc-400 hover:bg-zinc-100 disabled:opacity-10 transition-colors">
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M19 9l-7 7-7-7" /></svg>
+                          </button>
+                        </div>
+                      )}
                     </div>
                   ))}
                   {sessions.length === 0 && (
