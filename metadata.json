@@ -1,0 +1,7 @@
+{
+  "name": "iOS AI Chat",
+  "description": "An iPhone-inspired AI chatbot powered by Gemini 3 Pro Preview, featuring a sleek iOS design and real-time streaming responses.",
+  "requestFramePermissions": [
+    "microphone"
+  ]
+}
